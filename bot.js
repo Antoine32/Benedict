@@ -1,6 +1,7 @@
-var Discord = require('discord.io');
-var logger = require('winston');
-var auth = require('./auth.json');
+const Discord = require('discord.io');
+const logger = require('winston');
+const auth = require('./auth.json');
+const delay = require('delay');
 
 const serverID = "678456625895440404";
 
@@ -37,10 +38,11 @@ var villageois = [];
 
 var turn = 0;
 
-const turnCupidon = 0;
-const turnVoyante = 1;
-const turnLoup = 2;
-const turnSorciere = 3;
+const turnDay = 0;
+const turnCupidon = 1;
+const turnVoyante = 2;
+const turnLoup = 3;
+const turnSorciere = 4;
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -69,6 +71,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
         }
     } catch (Exception) {
         directMessage = true;
+        console.log(message);
     }
 
     // Our bot needs to know if it will execute a command
@@ -80,11 +83,19 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
         switch (cmd) {
             case 'say':
-                deleteMessage(channelID, evt.d.id);
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (as(evt.d.member.roles, roleBotOverlord) && args.length > 0) {
+                if (!directMessage && (as(evt.d.member.roles, roleAdmin) && as(evt.d.member.roles, roleBotOverlord)) && args.length > 0) {
                     send(message.substr(5), channelID);
                 }
+                return;
+            case 'dm':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
+                if (!directMessage && (as(evt.d.member.roles, roleAdmin) || as(evt.d.member.roles, roleBotOverlord)) && args.length > 0) {
+                    send(message.substr(27), args[0].replace("<@!", "").replace(">", ""));
+                }
+                return;
             case 'clear':
                 if (!directMessage && as(evt.d.member.roles, roleAdmin) && args.length > 0) {
                     clearMessage(channelID, (args[0].toLowerCase() === "all" ? null : args[0]));
@@ -116,6 +127,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             participantsID.push(id);
                             await play([id]);
                             await send("<@!" + id + "> a rejoin la partie", channelLoupGarou);
+                            await send(" ", id);
                         }
 
                         i++;
@@ -205,28 +217,34 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                         break;
                                 }
 
-                                bot.getMember({ serverID: serverID, userID: choix[j] }, function (err, response) {
-                                    if (err) {
-                                        logger.error(err);
-                                    } else {
-                                        doIt = as(response.roles, roleJoueur);
-                                        send("Le rôle " + (i >= 0 ? role[i] : "villageois") + " vous a été attribuer " + response.nick, participantsID[participantsID.length - 1]);
-                                    }
-                                });
+                                send("Le rôle " + (i >= 0 ? role[i] : "villageois") + " vous a été attribuer <@!" + choix[j] + ">", choix[j]);
 
                                 choix.splice(j, 1);
                                 if (i >= 0) role.splice(i, 1);
                             }
 
-                            await send("<@!" + userID + "> a fait débuter la partie. ", channelID);
+                            await delay(100);
 
-                            await play(turnOf(turn));
+                            for (let i = 0; i < loup.length; i++) {
+                                for (let j = 0; j < loup.length; j++) {
+                                    if (i != j) {
+                                        send("Vous jouer avec <@!" + loup[j] + ">", loup[i]);
+                                    }
+                                }
+
+                                if (loup.length > 1) {
+                                    await delay(100);
+                                    send("Vous devriez créer un groupe DM avec " + ((loup.length > 2) ? "eu" : "lui"), loup[i]);
+                                }
+                            }
+
+                            await send("<@!" + userID + "> a fait débuter la partie. ", channelID);
                         }
                         break;
                     case 'end':
                         deleteMessage(channelID, evt.d.id);
                         if (created && (userID === gameMasterID || as(evt.d.member.roles, roleAdmin))) {
-                            await removeFromAll(participantsID);
+                            await stopPlay(participantsID);
 
                             gameMasterID = null;
                             participantsID = [];
@@ -235,7 +253,6 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             started = false;
 
                             send("<@!" + userID + "> a mis fin à la partie. ", channelID);
-
                             stopPlay(participantsID);
                         }
                         break;
@@ -245,6 +262,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             turn++;
                             turn %= 4;
                             send("C'est maintenant le tour des " + turnOfString(turn), channelID);
+                            let joueurTurn = turnOf(turn);
+                            for (let i = 0; i < joueurTurn.length; i++) {
+                                send("C'est a toi de jouer", joueurTurn[i]);
+                            }
                         }
                         break;
                 }
@@ -576,11 +597,11 @@ async function play(players) {
                 serverID: serverID,
                 userID: players[i],
                 roleID: roleJoueur
-            }, function (err, response) {
+            }, async (err, response) => {
                 if (err) {
                     logger.error(err);
                     doIt = true;
-                    wait(1000);
+                    await delay(200);
                 } else {
                     console.log(response);
                     doIt = false;
@@ -588,11 +609,11 @@ async function play(players) {
             });
 
             if (!doIt) {
-                await bot.getMember({ serverID: serverID, userID: player }, function (err, response) {
+                await bot.getMember({ serverID: serverID, userID: player }, async (err, response) => {
                     if (err) {
                         logger.error(err);
                         doIt = true;
-                        wait(1000);
+                        await delay(200);
                     } else {
                         doIt = !as(response.roles, roleJoueur);
                     }
@@ -612,11 +633,11 @@ async function stopPlay(players) {
                 serverID: serverID,
                 userID: players[i],
                 roleID: roleJoueur
-            }, function (err, response) {
+            }, async (err, response) => {
                 if (err) {
                     logger.error(err);
                     doIt = true;
-                    wait(1000);
+                    await delay(200);
                 } else {
                     console.log(response);
                     doIt = false;
@@ -624,25 +645,17 @@ async function stopPlay(players) {
             });
 
             if (!doIt) {
-                await bot.getMember({ serverID: serverID, userID: player }, function (err, response) {
+                await bot.getMember({ serverID: serverID, userID: player }, async (err, response) => {
                     if (err) {
                         logger.error(err);
                         doIt = true;
-                        wait(1000);
+                        await delay(200);
                     } else {
                         doIt = as(response.roles, roleJoueur);
                     }
                 });
             }
         } while (doIt);
-    }
-}
-
-function wait(time) {
-    var now = new Date();
-    const wait = now.getTime();
-    for (; now.getTime() - wait < time; now = new Date()) {
-        for (var i = 0; i < 1000000; i++);
     }
 }
 

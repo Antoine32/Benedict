@@ -1,0 +1,12 @@
+{
+  "name": "Benedict",
+  "version": "1.0.0",
+  "main": "botB.js",
+  "description": "Assistant de gestion discord",
+  "author": "Antoine",
+  "dependencies": {
+    "delay": "^4.3.0",
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "winston": "^3.2.1"
+  }
+}
