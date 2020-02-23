@@ -210,33 +210,33 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     } while (i < args.length);
                 }
                 return;
+                case 'create':
+                    deleteMessage(channelID, evt.d.id);
+                    if (!started && !created) {
+                        clearMessage(channelLoupGarou, null);
+
+                        await delay(1000);
+
+                        gameMasterID = userID;
+
+                        participantsID = [];
+                        participantsID.push(gameMasterID);
+
+                        await play([gameMasterID], roleMaitreDeJeu);
+
+                        await delay(1000);
+
+                        await play([gameMasterID]);
+
+                        created = true;
+                        await send("<@!" + userID + "> a créé une nouvelle partie. ", channelLoupGarou);
+                    }
+                    return;
         }
 
         switch (channelID) {
             case channelLoupGarou:
                 switch (cmd) {
-                    case 'create':
-                        deleteMessage(channelID, evt.d.id);
-                        if (!started && !created) {
-                            clearMessage(channelLoupGarou, null);
-
-                            await delay(1000);
-
-                            gameMasterID = userID;
-
-                            participantsID = [];
-                            participantsID.push(gameMasterID);
-
-                            await play([gameMasterID], roleMaitreDeJeu);
-
-                            await delay(1000);
-
-                            await play([gameMasterID]);
-
-                            created = true;
-                            await send("<@!" + userID + "> a créé une nouvelle partie. ", channelID);
-                        }
-                        break;
                     case 'start':
                         deleteMessage(channelID, evt.d.id);
                         if (created && !started && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
