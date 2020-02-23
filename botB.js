@@ -1012,105 +1012,111 @@ async function deleteMessage(channelID, messageID) {
 async function kill(ID) {
     let emot = [];
     let pass = false;
+    let loop = false;
     ID = ID.replace("<@!", "").replace(">", "");
 
-    for (let i = 0; i < alive.length; i++) {
-        if (alive[i] === ID) {
-            let roleEst = await idToRoleAssociation.get(ID);
-            pass = true;
+    do {
+        loop = false;
+        for (let i = 0; i < alive.length; i++) {
+            if (alive[i] === ID) {
+                let roleEst = await idToRoleAssociation.get(ID);
+                pass = true;
 
-            await delay(500);
+                await delay(500);
 
-            switch (roleEst) {
-                case 'loup':
-                    for (let j = 0; j < loup.length; j++) {
-                        if (loup[j] === ID) {
-                            loup.splice(j, 1);
+                switch (roleEst) {
+                    case 'loup':
+                        for (let j = 0; j < loup.length; j++) {
+                            if (loup[j] === ID) {
+                                loup.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-                case "voyante":
-                    for (let j = 0; j < voyante.length; j++) {
-                        if (voyante[j] === ID) {
-                            voyante.splice(j, 1);
+                        break;
+                    case "voyante":
+                        for (let j = 0; j < voyante.length; j++) {
+                            if (voyante[j] === ID) {
+                                voyante.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-                case "chasseur":
-                    for (let j = 0; j < chasseur.length; j++) {
-                        if (chasseur[j] === ID) {
-                            chasseur.splice(j, 1);
+                        break;
+                    case "chasseur":
+                        for (let j = 0; j < chasseur.length; j++) {
+                            if (chasseur[j] === ID) {
+                                chasseur.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-                case "cupidon":
-                    for (let j = 0; j < cupidon.length; j++) {
-                        if (cupidon[j] === ID) {
-                            cupidon.splice(j, 1);
+                        break;
+                    case "cupidon":
+                        for (let j = 0; j < cupidon.length; j++) {
+                            if (cupidon[j] === ID) {
+                                cupidon.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-                case "sorciere":
-                    for (let j = 0; j < sorciere.length; j++) {
-                        if (sorciere[j] === ID) {
-                            sorciere.splice(j, 1);
+                        break;
+                    case "sorciere":
+                        for (let j = 0; j < sorciere.length; j++) {
+                            if (sorciere[j] === ID) {
+                                sorciere.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-                case "voleur":
-                    for (let j = 0; j < voleur.length; j++) {
-                        if (voleur[j] === ID) {
-                            voleur.splice(j, 1);
+                        break;
+                    case "voleur":
+                        for (let j = 0; j < voleur.length; j++) {
+                            if (voleur[j] === ID) {
+                                voleur.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-                default:
-                    for (let j = 0; j < villageois.length; j++) {
-                        if (villageois[j] === ID) {
-                            villageois.splice(j, 1);
+                        break;
+                    default:
+                        for (let j = 0; j < villageois.length; j++) {
+                            if (villageois[j] === ID) {
+                                villageois.splice(j, 1);
+                            }
                         }
-                    }
-                    break;
-            }
-
-            emot.push(idToEmojiAssociation.get(ID));
-            emojiToIdAssociation.delete(emot);
-            idToEmojiAssociation.delete(ID);
-            idToRoleAssociation.delete(ID);
-            alive.splice(i, 1);
-            votes.delete(ID);
-
-            for (let j = 0; j < emojiChoice.length; j++) {
-                if (emojiChoice[j] === emot) {
-                    emojiChoice.splice(j, 1);
+                        break;
                 }
+
+                emot.push(idToEmojiAssociation.get(ID));
+                emojiToIdAssociation.delete(emot);
+                idToEmojiAssociation.delete(ID);
+                idToRoleAssociation.delete(ID);
+                alive.splice(i, 1);
+                votes.delete(ID);
+
+                for (let j = 0; j < emojiChoice.length; j++) {
+                    if (emojiChoice[j] === emot) {
+                        emojiChoice.splice(j, 1);
+                    }
+                }
+
+                let msg = "<@!" + ID + "> est est mort ! Il était un " + roleEst + " ! ";
+                send(msg, channelLoupGarou, emot);
+                await delay(500);
+                stopPlay([ID], roleJoueur);
+                await delay(150);
+                play([ID], roleMort);
+                break;
+            }
+        }
+
+        if (as(couple, ID)) {
+            let id;
+            if (ID == couple[0]) {
+                id = couple[1];
+            } else {
+                id = couple[0];
             }
 
-            let msg = "<@!" + ID + "> est est mort ! Il était un " + roleEst + " ! ";
-            send(msg, channelLoupGarou, emot);
-            await delay(500);
-            stopPlay([ID], roleJoueur);
-            await delay(150);
-            play([ID], roleMort);
-            break;
-        }
-    }
+            emot.push(idToEmojiAssociation.get(id));
 
-    if (as(couple, ID)) {
-        let id;
-        if (ID == couple[0]) {
-            id = couple[1];
-        } else {
-            id = couple[0];
+            send("<@!" + ID + "> était en couple avec <@!" + id + "> ! ", channelLoupGarou, emot);
+
+            couple = [];
+            ID = id;
+            loop = true;
         }
 
-        morts.push(id);
-        emot.push(idToEmojiAssociation.get(id));
-
-        send("<@!" + ID + "> était en couple avec <@!" + id + "> ! ", channelLoupGarou, emot);
-
-        couple = [];
-    }
+    } while (loop);
 
     return pass;
 }
