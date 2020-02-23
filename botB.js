@@ -84,6 +84,8 @@ let journer = 0;
 
 let fini = false;
 
+let killRight = [];
+
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
@@ -409,15 +411,13 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         break;
                     case 'kill':
                         deleteMessage(channelID, evt.d.id);
-                        if (created && started && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
+                        if (created && started && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu) || as(killRight, userID))) {
                             let id = args[0].replace("<@!", "").replace(">", "");
-                            if (makingSure == 0) {
+                            if (makingSure == 0 && !as(killRight, userID)) {
                                 send("<@!" + userID + ">, voulez-vous vraiment éliminer <@!" + id + "> de force ? (si oui refaire la commande, sinon ne rien faire)");
                                 makingSure = 1;
                             } else {
-                                if (as(couple, id)) {
-                                    couple = [];
-                                }
+                                killRight = deleteFromArray(killRight, userID);
                                 kill(id);
                                 makingSure = 0;
                             }
@@ -1047,6 +1047,7 @@ async function kill(ID) {
                         for (let j = 0; j < chasseur.length; j++) {
                             if (chasseur[j] === ID) {
                                 chasseur.splice(j, 1);
+                                killRight.push(ID);
                             }
                         }
                         break;
