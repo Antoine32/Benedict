@@ -954,7 +954,7 @@ async function doTurn(turn) {
             approval = await tourSorciere();
             break;
         case turnVoleur:
-            send("Le tour du voleur n'a pas encore été implémenter", channelLoupGarou);
+            approval = await tourVoleur();
             break;
     }
 
