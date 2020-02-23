@@ -86,6 +86,8 @@ let fini = false;
 
 let killRight = [];
 
+const delaie = 250;
+
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
@@ -245,61 +247,61 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
                 send("Definition : ... = message ; @ = utilisateur ; :_: = listes de _ ; # = nombre ; / = ou", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 if (botoverlord || admin) {
                     send("!say ... => Fait dire ... a <@!" + bot.id + ">", channelID);
-                    await delay(150);
+                    await delay(delaie);
 
                     send("!emoji :emoji: => Liste de réaction que <@!" + bot.id + "> utilisera lors de la prochaine utilisation de !say", channelID);
-                    await delay(150);
+                    await delay(delaie);
                 }
 
                 if (botoverlord && admin) {
                     send("!dm @ ... => Fait dire ... a <@!" + bot.id + "> dans les dm de @", channelID);
-                    await delay(150);
+                    await delay(delaie);
                 }
 
                 if (admin) {
                     send("!clear # / all => Delete les # dernier messages ou tout les messages envoyer dans cette channel", channelID);
-                    await delay(150);
+                    await delay(delaie);
 
                     send("!join :@: => Tout les @ mentionner vont rejoindre la partie de loups-garous en cours de création ou en tant que spectateur si débuter", channelID);
-                    await delay(150);
+                    await delay(delaie);
 
                     send("!overthrow :@: => Remplace le maitre de jeu de force", channelID);
-                    await delay(150);
+                    await delay(delaie);
                 }
 
                 send("!ping => !pong", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!help => Ce menu", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!create => Crée une nouvelle partie de loups-garous et te met maitre de jeu (le maitre de jeu jou également, puisque la majorité des choses son gérer par <@!" + bot.id + ">)", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!join => Rejoin la partie de loups-garous en cours de création ou en tant que spectateur si débuter", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!start => Si maitre de jeu, fait commencer le jeu de loups-garous déjà créer", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!end => Si maitre de jeu, fait terminer le jeu de loups-garous", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!done => Fini ton tour dans loup-garous, le jour seulement le maitre de jeu peu le faire", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!next => Si maitre de jeu, force la fin du tour actuelle (pas la journer au complet)", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!display => Montre la liste des attribution emoji/joueur pour les votes de loups-garous", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 send("!kill @ => Si maitre de jeu ou quand le chasseur meurt, tue @", channelID);
-                await delay(150);
+                await delay(delaie);
 
                 return;
         }
