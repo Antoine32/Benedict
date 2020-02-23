@@ -86,7 +86,7 @@ let fini = false;
 
 let killRight = [];
 
-const delaie = 250;
+const delaie = 750;
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
