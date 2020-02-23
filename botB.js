@@ -429,8 +429,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                 send("<@!" + userID + ">, voulez-vous vraiment remplacer <@!" + gameMasterID + "> de force ? (si oui refaire la commande, sinon ne rien faire)");
                                 makingSure = 1;
                             } else {
+                                await delay(500);
                                 stopPlay(gameMasterID, roleMaitreDeJeu);
                                 gameMasterID = userID;
+                                await delay(500);
                                 play(gameMasterID, roleMaitreDeJeu);
                                 makingSure = 0;
                             }
