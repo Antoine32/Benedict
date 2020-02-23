@@ -1048,6 +1048,7 @@ async function kill(ID) {
                             if (chasseur[j] === ID) {
                                 chasseur.splice(j, 1);
                                 killRight.push(ID);
+                                send("<@!" + ID + "> faite \"!kill @user\" pour choisir qui tuer ! ", channelLoupGarou);
                             }
                         }
                         break;
