@@ -1627,32 +1627,32 @@ async function tourVoleur() {
 
                             switch (newRole) {
                                 case "loup":
-                                    loup = await deleteFromArray(loup, id);
                                     loup.push(idVoleur);
+                                    loup = deleteFromArray(loup, id);
                                     break;
                                 case "voyante":
-                                    voyante = await deleteFromArray(voyante, id);
                                     voyante.push(idVoleur);
+                                    voyante = deleteFromArray(voyante, id);
                                     break;
                                 case "chasseur":
-                                    chasseur = await deleteFromArray(chasseur, id);
                                     chasseur.push(idVoleur);
+                                    chasseur = deleteFromArray(chasseur, id);
                                     break;
                                 case "cupidon":
-                                    cupidon = await deleteFromArray(cupidon, id);
                                     cupidon.push(idVoleur);
+                                    cupidon = deleteFromArray(cupidon, id);
                                     break;
                                 case "sorciere":
-                                    sorciere = await deleteFromArray(sorciere, id);
                                     sorciere.push(idVoleur);
+                                    sorciere = deleteFromArray(sorciere, id);
                                     break;
                                 case "voleur":
-                                    voleur = await deleteFromArray(voleur, id);
                                     voleur.push(idVoleur);
+                                    voleur = deleteFromArray(voleur, id);
                                     break;
                                 default:
-                                    villageois = await deleteFromArray(villageois, id);
                                     villageois.push(idVoleur);
+                                    villageois = deleteFromArray(villageois, id);
                                     break;
                             }
 
@@ -1661,7 +1661,7 @@ async function tourVoleur() {
                             send("Vous vous ête fait volez <@!" + id + "> ! Vous ête maintenant le voleur ! ", id, [vote[j]]);
                             await delay(1000);
                             for (var i = 0; i < loup.length - 1; i++) {
-                                send("<@!" + id + "> n'est plus un loup, <@!" + idVoleur + "> est maintenant un loup",loup[i], [idToEmojiAssociation.get(idVoleur)]);
+                                send("<@!" + id + "> n'est plus un loup, <@!" + idVoleur + "> est maintenant un loup", loup[i], [idToEmojiAssociation.get(idVoleur)]);
                                 await delay(1000);
                             }
                         } else {
