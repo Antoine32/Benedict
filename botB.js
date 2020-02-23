@@ -1628,30 +1628,37 @@ async function tourVoleur() {
                             switch (newRole) {
                                 case "loup":
                                     loup.push(idVoleur);
+                                    await delay(200);
                                     loup = deleteFromArray(loup, id);
                                     break;
                                 case "voyante":
                                     voyante.push(idVoleur);
+                                    await delay(200);
                                     voyante = deleteFromArray(voyante, id);
                                     break;
                                 case "chasseur":
                                     chasseur.push(idVoleur);
+                                    await delay(200);
                                     chasseur = deleteFromArray(chasseur, id);
                                     break;
                                 case "cupidon":
                                     cupidon.push(idVoleur);
+                                    await delay(200);
                                     cupidon = deleteFromArray(cupidon, id);
                                     break;
                                 case "sorciere":
                                     sorciere.push(idVoleur);
+                                    await delay(200);
                                     sorciere = deleteFromArray(sorciere, id);
                                     break;
                                 case "voleur":
                                     voleur.push(idVoleur);
+                                    await delay(200);
                                     voleur = deleteFromArray(voleur, id);
                                     break;
                                 default:
                                     villageois.push(idVoleur);
+                                    await delay(200);
                                     villageois = deleteFromArray(villageois, id);
                                     break;
                             }
