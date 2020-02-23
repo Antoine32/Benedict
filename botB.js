@@ -32,7 +32,7 @@ var gameMasterID = null;
 var participantsID = [];
 var alive = [];
 
-const roles = ["voleur", "loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere"];
+const roles = ["loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere", "voleur"];
 
 let listEmojis = [];
 
@@ -210,28 +210,28 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     } while (i < args.length);
                 }
                 return;
-                case 'create':
-                    deleteMessage(channelID, evt.d.id);
-                    if (!started && !created) {
-                        clearMessage(channelLoupGarou, null);
+            case 'create':
+                deleteMessage(channelID, evt.d.id);
+                if (!started && !created) {
+                    clearMessage(channelLoupGarou, null);
 
-                        await delay(1000);
+                    await delay(1000);
 
-                        gameMasterID = userID;
+                    gameMasterID = userID;
 
-                        participantsID = [];
-                        participantsID.push(gameMasterID);
+                    participantsID = [];
+                    participantsID.push(gameMasterID);
 
-                        await play([gameMasterID], roleMaitreDeJeu);
+                    await play([gameMasterID], roleMaitreDeJeu);
 
-                        await delay(1000);
+                    await delay(1000);
 
-                        await play([gameMasterID]);
+                    await play([gameMasterID]);
 
-                        created = true;
-                        await send("<@!" + userID + "> a créé une nouvelle partie. ", channelLoupGarou);
-                    }
-                    return;
+                    created = true;
+                    await send("<@!" + userID + "> a créé une nouvelle partie. ", channelLoupGarou);
+                }
+                return;
         }
 
         switch (channelID) {
@@ -302,7 +302,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                     case "loup":
                                         loup.push(choix[j]);
                                         choixLoup = false;
-                                        //first = false;
+                                        first = false;
                                         break;
                                     case "voyante":
                                         voyante.push(choix[j]);
@@ -318,7 +318,6 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                         break;
                                     case "voleur":
                                         voleur.push(choix[j]);
-                                        first = false;
                                         break;
                                     default:
                                         villageois.push(choix[j]);
