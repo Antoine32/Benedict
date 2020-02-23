@@ -1672,9 +1672,11 @@ async function tourVoleur() {
                             await delay(1000);
                             send("Vous vous ête fait volez <@!" + id + "> ! Vous ête maintenant le voleur ! ", id, [vote[j]]);
                             await delay(1000);
-                            for (var k = 0; k < loup.length - 1; k++) {
-                                send("<@!" + id + "> n'est plus un loup, <@!" + idVoleur + "> est maintenant un loup", loup[k], [idToEmojiAssociation.get(idVoleur)]);
-                                await delay(1000);
+                            if (newRole == "loup") {
+                                for (var k = 0; k < loup.length - 1; k++) {
+                                    send("<@!" + id + "> n'est plus un loup, <@!" + idVoleur + "> est maintenant un loup", loup[k], [idToEmojiAssociation.get(idVoleur)]);
+                                    await delay(1000);
+                                }
                             }
                         } else {
                             send("Votre vote est invalide ! ", voleur[i]);
