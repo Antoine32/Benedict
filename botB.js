@@ -113,11 +113,15 @@ bot.on('ready', async (evt) => {
 
 bot.on('message', async (user, userID, channelID, message, evt) => {
     let directMessage = false;
+    let botoverlord = false;
+    let admin = false;
 
     try {
         if (evt.d.member.roles.length > 0 && evt.d.member.roles[0] === roleBot) {
             return;
         }
+        botoverlord = as(evt.d.member.roles, roleBotOverlord);
+        admin = as(evt.d.member.roles, admin);
     } catch (Exception) {
         directMessage = true;
         console.log(user + "<@!" + userID + "> : " + message);
@@ -181,7 +185,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'ping':
                 bot.sendMessage({
                     to: channelID,
-                    message: 'Pong!'
+                    message: '!pong'
                 });
                 return;
             case 'join':
@@ -235,6 +239,65 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         await send("<@!" + userID + "> a créé une nouvelle partie. ", channelID);
                     }
                 }
+                return;
+            case 'help':
+                send("Definition : ... = message ; @ = utilisateur ; :_: = listes de _ ; # = nombre ; / = ou", channelID);
+                await delay(150);
+
+                if (botoverlord || admin) {
+                    send("!say ... => Fait dire ... a <@!" + bot.id + ">", channelID);
+                    await delay(150);
+
+                    send("!emoji :emoji: => Liste de réaction que <@!" + bot.id + "> utilisera lors de la prochaine utilisation de !say", channelID);
+                    await delay(150);
+                }
+
+                if (botoverlord && admin) {
+                    send("!dm @ ... => Fait dire ... a <@!" + bot.id + "> dans les dm de @", channelID);
+                    await delay(150);
+                }
+
+                if (admin) {
+                    send("!clear # / all => Delete les # dernier messages ou tout les messages envoyer dans cette channel", channelID);
+                    await delay(150);
+
+                    send("!join :@: => Tout les @ mentionner vont rejoindre la partie de loups-garous en cours de création ou en tant que spectateur si débuter", channelID);
+                    await delay(150);
+
+                    send("!overthrow :@: => Remplace le maitre de jeu de force", channelID);
+                    await delay(150);
+                }
+
+                send("!ping => !pong", channelID);
+                await delay(150);
+
+                send("!help => Ce menu", channelID);
+                await delay(150);
+
+                send("!create => Crée une nouvelle partie de loups-garous et te met maitre de jeu (le maitre de jeu jou également, puisque la majorité des choses son gérer par <@!" + bot.id + ">)", channelID);
+                await delay(150);
+
+                send("!join => Rejoin la partie de loups-garous en cours de création ou en tant que spectateur si débuter", channelID);
+                await delay(150);
+
+                send("!start => Si maitre de jeu, fait commencer le jeu de loups-garous déjà créer", channelID);
+                await delay(150);
+
+                send("!end => Si maitre de jeu, fait terminer le jeu de loups-garous", channelID);
+                await delay(150);
+
+                send("!done => Fini ton tour dans loup-garous, le jour seulement le maitre de jeu peu le faire", channelID);
+                await delay(150);
+
+                send("!next => Si maitre de jeu, force la fin du tour actuelle (pas la journer au complet)", channelID);
+                await delay(150);
+
+                send("!display => Montre la liste des attribution emoji/joueur pour les votes de loups-garous", channelID);
+                await delay(150);
+
+                send("!kill @ => Si maitre de jeu ou quand le chasseur meurt, tue @", channelID);
+                await delay(150);
+
                 return;
         }
 
