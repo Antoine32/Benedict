@@ -1401,7 +1401,6 @@ async function tourLoup() {
                         if (j < vote.length) {
                             let id = emojiToIdAssociation.get(vote[j]);
                             votePick.push(id);
-                            send("Vous avez votez pour <@!" + id + "> ! ", loup[i], [vote[j]]);
                         } else {
                             send("Votre vote est invalide ! ", loup[i]);
                             approval = false;
