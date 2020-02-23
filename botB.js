@@ -431,7 +431,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         if (created && as(evt.d.member.roles, roleAdmin)) {
                             if (makingSure == 0) {
                                 await delay(500);
-                                send("<@!" + userID + ">, voulez-vous vraiment remplacer <@!" + gameMasterID + "> de force ? (si oui refaire la commande, sinon ne rien faire)");
+                                send("<@!" + userID + ">, voulez-vous vraiment remplacer <@!" + gameMasterID + "> de force ? (si oui refaire la commande, sinon ne rien faire)", channelLoupGarou);
                                 makingSure = 1;
                             } else {
                                 await delay(500);
