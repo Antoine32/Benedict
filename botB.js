@@ -22,7 +22,6 @@ const roleJoueur = "679302521956597760";
 const roleMort = "680963175302430772";
 
 const channelLoupGarou = "679142469685739531";
-const vocalLoupGarou = "679145725463887922";
 
 var created = false;
 var started = false;
