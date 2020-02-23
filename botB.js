@@ -493,7 +493,7 @@ async function nextTurn() {
             send(msg, channelLoupGarou, emot);
             await delay(2000);
 
-            send("<@!" + gameMasterID + "> veuiller faire \"!end\" quand vous aurez fini. ", channelLoupGarou, emot);
+            send("<@!" + gameMasterID + "> veuiller faire \"!end\" quand vous aurez fini. ", channelLoupGarou);
 
             fini = true;
         }
