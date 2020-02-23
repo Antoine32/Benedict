@@ -15,8 +15,11 @@ const roleVideo = "678655962713948250";
 const roleProg = "678655809437040661";
 const roleJournal = "678655993923633212";
 const roleWeb = "678659252146929674";
-const roleJoueur = "679302521956597760";
 const roleBotOverlord = "679853889260093512";
+
+const roleMaitreDeJeu = "680962987489886234";
+const roleJoueur = "679302521956597760";
+const roleMort = "680963175302430772";
 
 const channelLoupGarou = "679142469685739531";
 const vocalLoupGarou = "679145725463887922";
@@ -29,7 +32,7 @@ var gameMasterID = null;
 var participantsID = [];
 var alive = [];
 
-const roles = ["loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere"];
+const roles = ["loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere", "voleur"];
 
 let listEmojis = [];
 
@@ -50,17 +53,31 @@ var voyante = [];
 var chasseur = [];
 var cupidon = [];
 var sorciere = [];
+var voleur = [];
 var villageois = [];
 
 var turn = 0;
+var alt = 0;
 
 const turnDay = 0;
 const turnCupidon = 1;
-const turnVoyante = 4;//changement temporaire remetre a 2 plus tard
+const turnVoyante = 2;
 const turnLoup = 3;
-const turnSorciere = 2;//changement temporaire remetre a 4 plus tard
+const turnSorciere = 4;
+const turnVoleur = 5;
 
 let allEmojiList = [];
+
+let couple = [];
+
+let makingSure = 0;
+
+let now = new Date();
+let waitTime = now.getTime();
+const votingTime = 10000;
+const voteChoiceAmount = 4; // up to that many option possible on day vote
+
+let journer = 0;
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -99,7 +116,6 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
         console.log(user + "<@!" + userID + "> : " + message);
     }
 
-
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) === '!') {
@@ -111,13 +127,15 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'display':
                 if (!directMessage) { deleteMessage(channelID, evt.d.id); }
                 if (created && started) {
-                    listEmojiId(channelID, participantsID);
+                    listEmojiId(channelID, alive);
                 }
                 return;
             case 'done':
-                if (!directMessage) { deleteMessage(channelID, evt.d.id); }
-                else if (created && started && turn != turnDay && as(turnOf(turn), userID)) {
-                    if (await endTurn(turn) === true) {
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
+                if (created && started && ((directMessage && turn != turnDay && as(turnOf(turn), userID)) || (!directMessage && turn === turnDay && ((userID === gameMasterID) || as(evt.d.member.roles, roleMaitreDeJeu))))) {
+                    if (await doTurn(turn) === true) {
                         nextTurn();
                     }
                 }
@@ -184,7 +202,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         i++;
                     } while (i < args.length);
                 }
-                break;
+                return;
         }
 
         switch (channelID) {
@@ -193,14 +211,20 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     case 'create':
                         deleteMessage(channelID, evt.d.id);
                         if (!started && !created) {
+                            clearMessage(channelLoupGarou, null);
+
+                            await delay(1000);
+
                             gameMasterID = userID;
 
                             participantsID = [];
                             participantsID.push(gameMasterID);
 
-                            await play([gameMasterID]);
+                            await play([gameMasterID], roleMaitreDeJeu);
 
-                            //send("DM beep beep", participantsID[participantsID.length - 1]);
+                            await delay(1000);
+
+                            await play([gameMasterID]);
 
                             created = true;
                             await send("<@!" + userID + "> a créé une nouvelle partie. ", channelID);
@@ -208,7 +232,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         break;
                     case 'start':
                         deleteMessage(channelID, evt.d.id);
-                        if (created && !started && (userID === gameMasterID || as(evt.d.member.roles, roleAdmin))) {
+                        if (created && !started && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
                             started = true;
 
                             var choixLoup = true;
@@ -221,11 +245,13 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             chasseur = [];
                             cupidon = [];
                             sorciere = [];
+                            voleur = [];
                             villageois = [];
 
                             idToRoleAssociation = new Map();
 
                             morts = [];
+                            couple = [];
 
                             let copyEmoji = allEmojiList;
                             emojiChoice = [];
@@ -257,7 +283,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                 choixLoup = true;
 
                                 if (choix.length == 1 && first) {
-                                    i = role.length - 1;
+                                    i = 0;
                                     first = false;
                                 }
 
@@ -265,7 +291,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                     case "loup":
                                         loup.push(choix[j]);
                                         choixLoup = false;
-                                        //first = false;
+                                        first = false;
                                         break;
                                     case "voyante":
                                         voyante.push(choix[j]);
@@ -278,7 +304,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                         break;
                                     case "sorciere":
                                         sorciere.push(choix[j]);
-                                        first = false;
+                                        break;
+                                    case "voleur":
+                                        voleur.push(choix[j]);
                                         break;
                                     default:
                                         villageois.push(choix[j]);
@@ -298,7 +326,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                 if (i >= 0) role.splice(i, 1);
                             }
 
-                            await delay(100);
+                            await delay(1000);
 
                             for (let i = 0; i < loup.length; i++) {
                                 for (let j = 0; j < loup.length; j++) {
@@ -315,36 +343,81 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                             send("<@!" + userID + "> a fait débuter la partie. ", channelID);
 
-                            await delay(100);
+                            await delay(1000);
 
-                            listEmojiId(channelLoupGarou, participantsID);
+                            listEmojiId(channelLoupGarou, alive);
                         }
                         break;
                     case 'end':
                         deleteMessage(channelID, evt.d.id);
-                        if (created && (userID === gameMasterID || as(evt.d.member.roles, roleAdmin))) {
-                            await stopPlay(participantsID);
+                        if (created && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
+                            if (makingSure == 0) {
+                                send("<@!" + userID + ">, voulez-vous vraiment forcer la fin du jeu ? (si oui refaire la commande, sinon ne rien faire)", channelLoupGarou);
+                                makingSure = 1;
+                            } else {
+                                stopPlay(participantsID);
 
-                            gameMasterID = null;
-                            participantsID = [];
+                                await delay(1000);
 
-                            created = false;
-                            started = false;
+                                stopPlay(participantsID, roleMort);
 
-                            send("<@!" + userID + "> a mis fin à la partie. ", channelID);
-                            stopPlay(participantsID);
+                                await delay(1000);
+
+                                stopPlay(participantsID, roleMaitreDeJeu);
+
+                                await delay(200);
+
+                                gameMasterID = null;
+                                participantsID = [];
+
+                                created = false;
+                                started = false;
+
+                                send("<@!" + userID + "> a mis fin à la partie. ", channelID);
+                                stopPlay(participantsID);
+                            }
                         }
                         break;
                     case 'next':
                         deleteMessage(channelID, evt.d.id);
-                        if ((userID === gameMasterID || as(evt.d.member.roles, roleAdmin))) {
-                            nextTurn();
+                        if (created && started && ((userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu)))) {
+                            if (makingSure == 0) {
+                                send("<@!" + userID + ">, voulez-vous vraiment forcer la fin du tour ? (si oui refaire la commande, sinon ne rien faire)", channelLoupGarou);
+                                makingSure = 1;
+                            } else {
+                                nextTurn();
+                                makingSure = 0;
+                            }
                         }
                         break;
                     case 'kill':
                         deleteMessage(channelID, evt.d.id);
-                        if (created && started && (userID === gameMasterID || as(evt.d.member.roles, roleAdmin))) {
-                            morts.push(args[0].replace("<@!", "").replace(">", ""));
+                        if (created && started && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
+                            let id = args[0].replace("<@!", "").replace(">", "");
+                            if (makingSure == 0) {
+                                send("<@!" + userID + ">, voulez-vous vraiment éliminer <@!" + id + "> de force ? (si oui refaire la commande, sinon ne rien faire)");
+                                makingSure = 1;
+                            } else {
+                                if (as(couple, id)) {
+                                    couple = [];
+                                }
+                                kill(id);
+                                makingSure = 0;
+                            }
+                        }
+                        break;
+                    case 'overthrow':
+                        deleteMessage(channelID, evt.d.id);
+                        if (created && as(evt.d.member.roles, roleAdmin)) {
+                            if (makingSure == 0) {
+                                send("<@!" + userID + ">, voulez-vous vraiment remplacer <@!" + gameMasterID + "> de force ? (si oui refaire la commande, sinon ne rien faire)");
+                                makingSure = 1;
+                            } else {
+                                stopPlay(gameMasterID, roleMaitreDeJeu);
+                                gameMasterID = userID;
+                                play(gameMasterID, roleMaitreDeJeu);
+                                makingSure = 0;
+                            }
                         }
                         break;
                 }
@@ -354,44 +427,46 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
 async function listEmojiId(channelID, array) {
     let msg = "";
+    let emot = [];
     console.log(idToEmojiAssociation);
     for (var i = 0; i < array.length; i++) {
         msg += "<@!" + array[i] + "> : " + idToEmojiAssociation.get(array[i]) + " ; ";
+        emot.push(idToEmojiAssociation.get(array[i]));
     }
     await delay(100);
 
-    send(msg, channelID, emojiChoice);
+    send(msg, channelID, emot);
 }
 
 async function nextTurn() {
     if (created && started) {
-        turn++;
-        turn %= 5;
+        makingSure = 0;
+        alt = 0;
 
-        for (var i = 0; i < participantsID.length; i++) {
-            votes.set(participantsID[i], []);
+        do {
+            turn++;
+            turn %= 6;
+        } while (!(turnOf(turn) === null || turnOf(turn) == undefined || turnOf(turn).length > 0));
+
+        for (var i = 0; i < alive.length; i++) {
+            votes.set(alive[i], []);
         }
+
+        await delay(2000);
 
         send("C'est le " + turnOfString(turn), channelLoupGarou);
 
-        let joueurTurn = turnOf(turn);
-        if (joueurTurn != null) {
-            for (let i = 0; i < joueurTurn.length; i++) {
-                send("C'est a toi de jouer", joueurTurn[i]);
-            }
-        }
-
         await delay(150);
+
         doTurn(turn);
     }
 }
 
 bot.on('messageReactionAdd', async (reaction, user) => {
     try {
-        if (created && started && reaction.d.guild_id == undefined) {
+        if (created && started && (turnOf(turn) === null || reaction.d.guild_id == undefined)) {
             if (turnOf(turn) === null || as(turnOf(turn), reaction.d.user_id)) {
                 votes.get(reaction.d.user_id).push(reaction.d.emoji.name);
-                console.log(votes);
             }
         }
     } catch (err) {
@@ -526,6 +601,22 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 });
 
 bot.on('messageReactionRemove', function (reaction) {
+    try {
+        if (created && started && reaction.d.guild_id == undefined) {
+            if (turnOf(turn) === null || as(turnOf(turn), reaction.d.user_id)) {
+                let buf = votes.get(reaction.d.user_id);
+                for (let i = 0; i < buf.length; i++) {
+                    if (buf[i] === reaction.d.emoji.name) {
+                        buf.splice(i, 1);
+                    }
+                }
+                votes.set(reaction.d.user_id, buf);
+            }
+        }
+    } catch (err) {
+        return;
+    }
+
     switch (reaction.d.channel_id) {
         case '678654094210236456':
             switch (reaction.d.message_id) {
@@ -730,7 +821,11 @@ async function clearMessage(channelID, limit) {
     }
 }
 
-async function play(players) {
+async function play(players, giveRole) {
+    if (giveRole === undefined) {
+        giveRole = roleJoueur;
+    }
+
     for (var i = 0; i < players.length; i++) {
         let doIt = false;
         let player = players[i];
@@ -739,7 +834,7 @@ async function play(players) {
             await bot.addToRole({
                 serverID: serverID,
                 userID: players[i],
-                roleID: roleJoueur
+                roleID: giveRole
             }, async (err, response) => {
                 if (err) {
                     logger.error(err);
@@ -758,7 +853,7 @@ async function play(players) {
                         doIt = true;
                         await delay(200);
                     } else {
-                        doIt = !as(response.roles, roleJoueur);
+                        doIt = !as(response.roles, giveRole);
                     }
                 });
             }
@@ -766,7 +861,11 @@ async function play(players) {
     }
 }
 
-async function stopPlay(players) {
+async function stopPlay(players, giveRole) {
+    if (giveRole === undefined) {
+        giveRole = roleJoueur;
+    }
+
     for (var i = 0; i < players.length; i++) {
         let doIt = false;
         let player = players[i];
@@ -775,7 +874,7 @@ async function stopPlay(players) {
             await bot.removeFromRole({
                 serverID: serverID,
                 userID: players[i],
-                roleID: roleJoueur
+                roleID: giveRole
             }, async (err, response) => {
                 if (err) {
                     logger.error(err);
@@ -794,7 +893,7 @@ async function stopPlay(players) {
                         doIt = true;
                         await delay(200);
                     } else {
-                        doIt = as(response.roles, roleJoueur);
+                        doIt = as(response.roles, giveRole);
                     }
                 });
             }
@@ -814,6 +913,8 @@ function turnOf(turn) {
             return loup;
         case turnSorciere:
             return sorciere;
+        case turnVoleur:
+            return voleur;
     }
 }
 
@@ -829,104 +930,35 @@ function turnOfString(turn) {
             return "tour des loups-garous";
         case turnSorciere:
             return "tour de la sorciere";
+        case turnVoleur:
+            return "tour du voleur";
     }
 }
 
 async function doTurn(turn) {
-    switch (turn) {
-        case turnDay:
-            send("Les votes du jour n'ont pas encore été implémenter", channelLoupGarou);
-            morts = [];
-            break;
-        case turnCupidon:
-            send("Le tour du cupidon n'a pas encore été implémenter", channelLoupGarou);
-            break;
-        case turnVoyante:
-            send("Le tour de la voyante n'a pas encore été implémenter", channelLoupGarou);
-            break;
-        case turnLoup:
-            send("Le tour des loups-garous n'a pas encore été implémenter", channelLoupGarou);
-            break;
-        case turnSorciere:
-            for (let i = 0; i < sorciere.length; i++) {
-                let vie = morts.length > 0 && potionVie;
-                let mort = potionMort && (alive.length - morts.length) > 1;
-
-                if (morts.length > 0) { send("<@!" + morts[0] + "> est mort cette nuit, voulez-vous...", sorciere[i]); }
-                else { send("Personne n'est mort cette nuit, voulez-vous...", sorciere[i]); }
-
-                if (vie || mort) {
-                    await delay(150);
-                    let message = "";
-                    let emote = [];
-                    if (vie) {
-                        message += "Le réssucité :innocent: ? ";
-                        emote.push('😇');
-                    }
-                    message += (mort ? "N" : "Ou n") + "e rien faire :neutral_face: ? ";
-                    emote.push('😐');
-                    if (mort) {
-                        message += "Ou empoisoner quelqu'un d'autre :nauseated_face: ? ";
-                        emote.push('🤢');
-                    }
-                    send(message, sorciere[i], emote);
-                }
-            }
-            break;
-    }
-}
-
-async function endTurn(turn) {
     let approval = true;
-
     switch (turn) {
         case turnDay:
+            approval = await tourDay();
             break;
         case turnCupidon:
+            approval = await tourCupidon();
             break;
         case turnVoyante:
+            approval = await tourVoyante();
             break;
         case turnLoup:
+            approval = await tourLoup();
             break;
         case turnSorciere:
-            for (let i = 0; i < sorciere.length && approval; i++) {
-                if ((morts.length > 0 && potionVie) || potionMort) {
-                    if (votes.has(sorciere[i])) {
-                        let vote = votes.get(sorciere[i]);
-                        if (vote.length > 0) {
-                            let j = 0;
-                            for (; j < vote.length && (!(vote[j] === '😇' && potionVie) && vote[j] != '😐' && !(vote[j] === '🤢' && potionMort)); j++);
-
-                            if (j < vote.length) {
-                                switch (vote[j]) {
-                                    case '😇':
-                                        potionVie = false;
-                                        break;
-                                    case '😐':
-                                        break;
-                                    case '🤢':
-                                        potionMort = false;
-                                        send("Qui ? ", sorciere[i], emojiChoice);
-                                        break;
-                                }
-                            } else {
-                                approval = false;
-                            }
-                        } else {
-                            approval = false;
-                        }
-                    } else {
-                        approval = false;
-                    }
-                }
-            }
+            approval = await tourSorciere();
             break;
-        default:
+        case turnVoleur:
+            send("Le tour du voleur n'a pas encore été implémenter", channelLoupGarou);
             break;
     }
 
     console.log(approval);
-
     return approval;
 }
 
@@ -940,12 +972,619 @@ async function deleteMessage(channelID, messageID) {
     });
 }
 
-function kill(ID) {
+async function kill(ID) {
+    let emot = [];
+    let pass = false;
     ID = ID.replace("<@!", "").replace(">", "");
+
     for (let i = 0; i < alive.length; i++) {
         if (alive[i] === ID) {
-            alive.slice(i, 1);
+            let roleEst = await idToRoleAssociation.get(ID);
+            pass = true;
+
+            await delay(500);
+
+            switch (roleEst) {
+                case 'loup':
+                    for (let j = 0; j < loup.length; j++) {
+                        if (loup[j] === ID) {
+                            loup.splice(j, 1);
+                        }
+                    }
+                    break;
+                case "voyante":
+                    for (let j = 0; j < voyante.length; j++) {
+                        if (voyante[j] === ID) {
+                            voyante.splice(j, 1);
+                        }
+                    }
+                    break;
+                case "chasseur":
+                    for (let j = 0; j < chasseur.length; j++) {
+                        if (chasseur[j] === ID) {
+                            chasseur.splice(j, 1);
+                        }
+                    }
+                    break;
+                case "cupidon":
+                    for (let j = 0; j < cupidon.length; j++) {
+                        if (cupidon[j] === ID) {
+                            cupidon.splice(j, 1);
+                        }
+                    }
+                    break;
+                case "sorciere":
+                    for (let j = 0; j < sorciere.length; j++) {
+                        if (sorciere[j] === ID) {
+                            sorciere.splice(j, 1);
+                        }
+                    }
+                    break;
+                case "voleur":
+                    for (let j = 0; j < voleur.length; j++) {
+                        if (voleur[j] === ID) {
+                            voleur.splice(j, 1);
+                        }
+                    }
+                    break;
+                default:
+                    for (let j = 0; j < villageois.length; j++) {
+                        if (villageois[j] === ID) {
+                            villageois.splice(j, 1);
+                        }
+                    }
+                    break;
+            }
+
+            emot.push(idToEmojiAssociation.get(ID));
+            emojiToIdAssociation.delete(emot);
+            idToEmojiAssociation.delete(ID);
+            idToRoleAssociation.delete(ID);
+            alive.splice(i, 1);
+            votes.delete(ID);
+
+            for (let j = 0; j < emojiChoice.length; j++) {
+                if (emojiChoice[j] === emot) {
+                    emojiChoice.splice(j, 1);
+                }
+            }
+
+            let msg = "<@!" + ID + "> est est mort ! Il était un " + roleEst + " ! ";
+            send(msg, channelLoupGarou, emot);
+            await delay(500);
+            stopPlay([ID], roleJoueur);
+            await delay(150);
+            play([ID], roleMort);
             break;
         }
     }
+
+    if (as(couple, ID)) {
+        let id;
+        if (ID == couple[0]) {
+            id = couple[1];
+        } else {
+            id = couple[0];
+        }
+
+        morts.push(id);
+        emot.push(idToEmojiAssociation.get(id));
+
+        send("<@!" + ID + "> était en couple avec <@!" + id + "> ! ", channelLoupGarou, emot);
+
+        couple = [];
+    }
+
+    return pass;
 }
+
+async function tourDay() {
+    let approval = true;
+    let votePick = [];
+
+    if (alt < 3) {
+        now = new Date();
+        let timeLeft = now.getTime() - waitTime;
+        if (timeLeft >= votingTime) {
+            switch (alt) {
+                case 0:
+                    for (let i = 0; i < morts.length; i++) {
+                        if (await kill(morts[i]) === true) {
+                            await delay(500);
+                        }
+                    }
+                    morts = [];
+
+                    await delay(1000);
+
+                    send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
+
+                    await delay(159);
+
+                    listEmojiId(channelLoupGarou, alive);
+
+                    now = new Date();
+                    waitTime = now.getTime();
+                    approval = false;
+                    journer++;
+                    alt = 1;
+                    break;
+                case 1:
+                    for (let i = 0; i < alive.length; i++) {
+                        if (votes.has(alive[i])) {
+                            let vote = votes.get(alive[i]);
+                            if (vote.length > 0) {
+                                let j = vote.length - 1;
+                                for (; j >= 0 && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === alive[i]); j--);
+
+                                if (j < vote.length) {
+                                    let id = emojiToIdAssociation.get(vote[j]);
+                                    votePick.push(id);
+                                }
+                            }
+                        }
+                    }
+
+                    if (votePick.length > 0) {
+                        let count = new Map();
+                        let opt = [];
+
+                        for (let i = 0; i < votePick.length; i++) {
+                            if (count.has(votePick[i])) {
+                                count.set(votePick[i], count.get(votePick[i]) + 1);
+                            } else {
+                                count.set(votePick[i], 1);
+                                opt.push(votePick[i]);
+                            }
+                        }
+
+                        let id = [];
+                        let bigest = [];
+
+                        while (opt.length > 0) {
+                            let bigId = 0;
+                            let big = count.get(opt[bigId]);
+                            for (var j = 0; j < opt.length; j++) {
+                                let buf = count.get(opt[j]);
+                                if (buf > big) {
+                                    bigId = j;
+                                    big = buf;
+                                }
+                            }
+                            id.push(opt[bigId]);
+                            bigest.push(count.get(opt[bigId]));
+                            count.delete(opt[bigId]);
+                            opt.splice(bigId, 1);
+                        }
+
+                        let accusers = [];
+
+                        for (let i = 0; i < voteChoiceAmount && i < id.length; i++) {
+                            accusers.push(id[i]);
+                        }
+
+                        send("Qui ferez-vous bruler sur le bucher ? (phase final - faire des débats) ", channelLoupGarou);
+
+                        await delay(1500);
+
+                        listEmojiId(channelLoupGarou, accusers);
+
+                        for (var i = 0; i < alive.length; i++) {
+                            votes.set(alive[i], []);
+                        }
+
+                        now = new Date();
+                        waitTime = now.getTime();
+                        approval = false;
+                        alt = 2;
+                    } else {
+                        send("Personne n'as voter ! ", channelLoupGarou);
+                        now = new Date();
+                        waitTime = now.getTime();
+                        approval = false;
+                    }
+                    break;
+                case 2:
+                    for (let i = 0; i < alive.length && approval; i++) {
+                        if (votes.has(alive[i])) {
+                            let vote = votes.get(alive[i]);
+                            if (vote.length > 0) {
+                                let j = vote.length - 1;
+                                for (; j >= 0 && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === alive[i]); j--);
+
+                                if (j < vote.length) {
+                                    let id = emojiToIdAssociation.get(vote[j]);
+                                    votePick.push(id);
+                                } else {
+                                    approval = false;
+                                }
+                            }
+                        }
+                    }
+
+                    if (approval && votePick.length > 0) {
+                        let count = new Map();
+                        let opt = [];
+
+                        for (let i = 0; i < votePick.length; i++) {
+                            if (count.has(votePick[i])) {
+                                count.set(votePick[i], count.get(votePick[i]) + 1);
+                            } else {
+                                count.set(votePick[i], 1);
+                                opt.push(votePick[i]);
+                            }
+                        }
+
+                        let bigId = 0;
+                        let big = count.get(opt[bigId]);
+                        for (var j = 0; j < opt.length; j++) {
+                            let buf = count.get(opt[j]);
+                            if (buf > big) {
+                                bigId = j;
+                                big = buf;
+                            }
+                        }
+
+                        let dead = opt[bigId];
+
+                        if (await kill(dead) === true) {
+                            await delay(500);
+                        }
+
+                        approval = false;
+                        avt = 3;
+                    } else {
+                        send("Il reste des gens qui n'on pas voter ! ", channelLoupGarou);
+                        now = new Date();
+                        waitTime = now.getTime();
+                        approval = false;
+                    }
+                    break;
+            }
+        } else {
+            approval = false;
+            send("Laisser le temps au gens de voter avant de faire \"!done\" ! Il reste " + Math.max(Math.floor((votingTime - timeLeft) / 1000), 0) + " seconde au minimum pour voter . ", channelLoupGarou);
+            waitTime += timeLeft / 2;
+        }
+        approval = false;
+    }
+
+    return approval;
+}
+
+async function tourCupidon() {
+    let approval = true;
+
+    if (couple.length === 0) {
+        for (let i = 0; i < cupidon.length && approval; i++) {
+            switch (alt) {
+                case 0:
+                    send("Qui veut tu mettre en couple ? ", cupidon[i], emojiChoice);
+                    approval = false;
+                    alt = 1;
+                    break;
+                case 1:
+                    if (votes.has(cupidon[i])) {
+                        let vote = votes.get(cupidon[i]);
+                        if (vote.length > 0) {
+                            let j = 0;
+                            for (; j < vote.length && !as(emojiChoice, vote[j]); j++); // est ce que le cupidon peut se mettre en couple lui-même ? emojiToIdAssociation.get(vote[j]) === cupidon[i]
+
+                            let k = j + 1;
+                            for (; k < vote.length && !as(emojiChoice, vote[k]); k++); // est ce que le cupidon peut se mettre en couple lui-même ? emojiToIdAssociation.get(vote[j]) === cupidon[i]
+
+                            if (k < vote.length) {
+                                couple = [emojiToIdAssociation.get(vote[j]), emojiToIdAssociation.get(vote[k])];
+                                send("<@!" + couple[0] + "> est maintenant en couple avec <@!" + couple[1] + "> ! ", cupidon[i], [vote[j], vote[k]]);
+                                await delay(500);
+                                send("Vous ête maintenant en couple avec <@!" + couple[1] + "> ! ", couple[0], [vote[k]]);
+                                await delay(500);
+                                send("Vous ête maintenant en couple avec <@!" + couple[0] + "> ! ", couple[1], [vote[j]]);
+                            } else {
+                                send("Votre vote est invalide ! ", cupidon[i]);
+                                approval = false;
+                            }
+                        } else {
+                            send("Vous n'avez pas voter ! ", cupidon[i]);
+                            approval = false;
+                        }
+                    } else {
+                        send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", cupidon[i]);
+                        approval = false;
+                    }
+                    break;
+            }
+        }
+    }
+
+    return approval;
+}
+
+async function tourVoyante() {
+    let approval = true;
+
+    for (let i = 0; i < voyante.length && approval; i++) {
+        switch (alt) {
+            case 0:
+                send("L'identité de quelle joueur voulez-vous connaitre ? ", voyante[i], emojiChoice);
+                approval = false;
+                alt = 1;
+                break;
+            case 1:
+                if (votes.has(voyante[i])) {
+                    let vote = votes.get(voyante[i]);
+                    if (vote.length > 0) {
+                        let j = 0;
+                        for (; j < vote.length && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === voyante[i]); j++);
+
+                        if (j < vote.length) {
+                            let id = emojiToIdAssociation.get(vote[j]);
+                            send("<@!" + id + "> est un " + idToRoleAssociation.get(id) + " ! ", voyante[i], [vote[j]]);
+                        } else {
+                            send("Votre vote est invalide ! ", voyante[i]);
+                            approval = false;
+                        }
+                    } else {
+                        send("Vous n'avez pas voter ! ", voyante[i]);
+                        approval = false;
+                    }
+                } else {
+                    send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", voyante[i]);
+                    approval = false;
+                }
+                break;
+        }
+    }
+
+    return approval;
+}
+
+async function tourLoup() {
+    let approval = true;
+    let votePick = [];
+
+    switch (alt) {
+        case 0:
+            for (let i = 0; i < loup.length; i++) {
+                send("Qui voulez-vous dévorer cette nuit ? ", loup[i], emojiChoice);
+                approval = false;
+                alt = 1;
+            }
+            break;
+        case 1:
+            for (let i = 0; i < loup.length && approval; i++) {
+                if (votes.has(loup[i])) {
+                    let vote = votes.get(loup[i]);
+                    if (vote.length > 0) {
+                        let j = vote.length - 1;
+                        for (; j >= 0 && (!as(emojiChoice, vote[j]) || as(loup, emojiToIdAssociation.get(vote[j]))); j--);
+
+                        if (j < vote.length) {
+                            let id = emojiToIdAssociation.get(vote[j]);
+                            votePick.push(id);
+                            send("Vous avez votez pour <@!" + id + "> ! ", loup[i], [vote[j]]);
+                        } else {
+                            send("Votre vote est invalide ! ", loup[i]);
+                            approval = false;
+                        }
+                    } else {
+                        send("Vous n'avez pas voter ! ", loup[i]);
+                        approval = false;
+                    }
+                } else {
+                    send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", loup[i]);
+                    approval = false;
+                }
+            }
+
+            if (approval) {
+                console.log(votePick);
+
+                let count = new Map();
+                let opt = [];
+
+                for (let i = 0; i < votePick.length; i++) {
+                    if (count.has(votePick[i])) {
+                        count.set(votePick[i], count.get(votePick[i]) + 1);
+                    } else {
+                        count.set(votePick[i], 1);
+                        opt.push(votePick[i]);
+                    }
+                }
+
+                let bigest = 0;
+                let id = opt[0];
+                let equal = false;
+                let equalId = opt[0];
+
+                for (var j = 0; j < opt.length; j++) {
+                    let buf = count.get(opt[j]);
+                    if (buf > bigest) {
+                        bigest = buf;
+                        id = opt[j];
+                        equal = false;
+                    } else if (buf === bigest) {
+                        equal = true;
+                        equalId = opt[j];
+                    }
+                }
+
+                await delay(150);
+
+                let msg, emo;
+
+                if (equal) {
+                    approval = false;
+                    msg = "<@!" + id + "> et <@!" + equalId + "> on tout les deux autant de votes, décider vous ! ";
+                    emo = [idToEmojiAssociation.get(id), idToEmojiAssociation.get(equalId)];
+                } else {
+                    morts.push(id);
+                    msg = "Vous avez dévorer <@!" + id + "> ! ";
+                    emo = [idToEmojiAssociation.get(id)];
+                }
+
+                for (let i = 0; i < loup.length; i++) {
+                    send(msg, loup[i], emo);
+                    votes.set(loup[i], []);
+                    await delay(2000);
+                }
+            }
+            break;
+    }
+
+    return approval;
+}
+
+async function tourSorciere() {
+    let approval = true;
+
+    for (let i = 0; i < sorciere.length && approval; i++) {
+        switch (alt) {
+            case 0:
+                let vie = morts.length > 0 && potionVie;
+                let mort = potionMort && (alive.length - morts.length) > 1;
+
+                if (morts.length > 0) {
+                    send("<@!" + morts[0] + "> est mort cette nuit, voulez-vous...", sorciere[i]);
+                    if (!mort && !vie) {
+                        break;
+                    }
+                }
+                else {
+                    send("Personne n'est mort cette nuit, voulez-vous...", sorciere[i]);
+                    if (!mort) {
+                        break;
+                    }
+                }
+
+                await delay(250);
+
+                let message = "";
+                let emote = [];
+                if (vie) {
+                    message += "Le réssucité :innocent: ? ";
+                    emote.push('😇');
+                }
+                message += (mort ? "N" : "Ou n") + "e rien faire :neutral_face: ? ";
+                emote.push('😐');
+                if (mort) {
+                    message += "Ou empoisoner quelqu'un d'autre :nauseated_face: ? ";
+                    emote.push('🤢');
+                }
+
+                await delay(250);
+                send(message, sorciere[i], emote);
+
+                approval = false;
+                alt = 1;
+                break;
+            case 1:
+                if ((morts.length > 0 && potionVie) || potionMort) {
+                    if (votes.has(sorciere[i])) {
+                        let vote = votes.get(sorciere[i]);
+                        if (vote.length > 0) {
+                            let j = 0;
+                            let vie = morts.length > 0 && potionVie;
+                            let mort = potionMort && (alive.length - morts.length) > 1;
+                            for (; j < vote.length && (!(vote[j] === '😇' && vie) && vote[j] != '😐' && !(vote[j] === '🤢' && mort)); j++);
+
+                            await delay(150);
+
+                            if (j < vote.length) {
+                                switch (vote[j]) {
+                                    case '😇':
+                                        potionVie = false;
+                                        morts.pop();
+                                        break;
+                                    case '😐':
+                                        break;
+                                    case '🤢':
+                                        potionMort = false;
+                                        votes.set(sorciere[i], []);
+                                        approval = false;
+                                        send("Qui ? ", sorciere[i], emojiChoice);
+                                        alt = 2;
+                                        break;
+                                }
+                            } else {
+                                send("Votre vote est invalide ! ", sorciere[i]);
+                                approval = false;
+                            }
+                        } else {
+                            send("Vous n'avez pas voter ! ", sorciere[i]);
+                            approval = false;
+                        }
+                    } else {
+                        send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", sorciere[i]);
+                        approval = false;
+                    }
+                }
+                break;
+            case 2:
+                if (votes.has(sorciere[i])) {
+                    let vote = votes.get(sorciere[i]);
+                    if (vote.length > 0) {
+                        let j = 0;
+                        for (; j < vote.length && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === sorciere[i]); j++);
+
+                        if (j < vote.length) {
+                            let id = emojiToIdAssociation.get(vote[j]);
+                            morts.push(id);
+                            send("Vous avez empoisoner <@!" + id + "> ! ", sorciere[i], [vote[j]]);
+                        } else {
+                            send("Votre vote est invalide ! ", sorciere[i]);
+                            approval = false;
+                        }
+                    } else {
+                        send("Vous n'avez pas voter ! ", sorciere[i]);
+                        approval = false;
+                    }
+                } else {
+                    send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", sorciere[i]);
+                    approval = false;
+                }
+                break;
+        }
+    }
+
+    return approval;
+}
+
+/*async function tourVoyante() {
+    let approval = true;
+
+    for (let i = 0; i < voyante.length && approval; i++) {
+        switch (alt) {
+            case 0:
+                send("Quelle joueur voulez-vous voler ? ", voyante[i], emojiChoice);
+                approval = false;
+                alt = 1;
+                break;
+            case 1:
+                if (votes.has(voyante[i])) {
+                    let vote = votes.get(voyante[i]);
+                    if (vote.length > 0) {
+                        let j = 0;
+                        for (; j < vote.length && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === voyante[i]); j++);
+
+                        if (j < vote.length) {
+                            let id = emojiToIdAssociation.get(vote[j]);
+                            send("<@!" + id + "> est un " + idToRoleAssociation.get(id) + " ! ", voyante[i], [vote[j]]);
+                        } else {
+                            send("Votre vote est invalide ! ", voyante[i]);
+                            approval = false;
+                        }
+                    } else {
+                        send("Vous n'avez pas voter ! ", voyante[i]);
+                        approval = false;
+                    }
+                } else {
+                    send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", voyante[i]);
+                    approval = false;
+                }
+                break;
+        }
+    }
+
+    return approval;
+}*/
