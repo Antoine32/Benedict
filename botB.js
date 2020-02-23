@@ -32,7 +32,7 @@ var gameMasterID = null;
 var participantsID = [];
 var alive = [];
 
-const roles = ["loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere", "voleur"];
+const roles = ["voleur", "loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere"];
 
 let listEmojis = [];
 
@@ -300,7 +300,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                     case "loup":
                                         loup.push(choix[j]);
                                         choixLoup = false;
-                                        first = false;
+                                        //first = false;
                                         break;
                                     case "voyante":
                                         voyante.push(choix[j]);
@@ -316,6 +316,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                         break;
                                     case "voleur":
                                         voleur.push(choix[j]);
+                                        first = false;
                                         break;
                                     default:
                                         villageois.push(choix[j]);
@@ -479,15 +480,15 @@ async function nextTurn() {
         } else {
             let msg = "";
             let emot = [];
-            if (loup.length == 0) {
+            if (couple.length == 2 && alive.length == 2) {
+                msg = "Le couple a gagner !!! ";
+                emot = [idToEmojiAssociation.get(couple[0]), idToEmojiAssociation.get(couple[1])];
+            } else if (loup.length == 0) {
                 msg = "Le village a ganer !!! ";
                 emot = emojiLoup;
             } else if (alive.length == loup.length) {
                 msg = "Les loups-garous on gagner !!! ";
                 emot = emojiVillage;
-            } else if (couple.length == 2 && alive.length == 2) {
-                msg = "Le couple a gagner !!! ";
-                emot = [idToEmojiAssociation.get(couple[0]), idToEmojiAssociation.get(couple[1])];
             }
 
             send(msg, channelLoupGarou, emot);
