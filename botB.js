@@ -39,6 +39,9 @@ let listEmojis = [];
 let potionVie = true;
 let potionMort = true;
 
+let emojiVillage = [];
+let emojiLoup = [];
+
 let emojiChoice = [];
 let emojiToIdAssociation = new Map();
 let idToEmojiAssociation = new Map();
@@ -78,6 +81,8 @@ const votingTime = 10000;
 const voteChoiceAmount = 4; // up to that many option possible on day vote
 
 let journer = 0;
+
+let fini = false;
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -249,9 +254,13 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             villageois = [];
 
                             idToRoleAssociation = new Map();
+                            fini = false;
 
                             morts = [];
                             couple = [];
+
+                            emojiVillage = [];
+                            emojiLoup = [];
 
                             let copyEmoji = allEmojiList;
                             emojiChoice = [];
@@ -313,6 +322,12 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                         break;
                                 }
 
+                                if ((i >= 0 ? role[i] : "villageois") === "loup") {
+                                    emojiLoup.push(copyEmoji[k]);
+                                } else {
+                                    emojiVillage.push(copyEmoji[k]);
+                                }
+
                                 send("Le rôle " + (i >= 0 ? role[i] : "villageois") + " vous a été attribuer <@!" + choix[j] + ">", choix[j], [copyEmoji[k]]);
                                 emojiToIdAssociation.set(copyEmoji[k], choix[j]);
                                 idToEmojiAssociation.set(choix[j], copyEmoji[k]);
@@ -351,7 +366,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     case 'end':
                         deleteMessage(channelID, evt.d.id);
                         if (created && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
-                            if (makingSure == 0) {
+                            if (makingSure == 0 && !fini) {
                                 send("<@!" + userID + ">, voulez-vous vraiment forcer la fin du jeu ? (si oui refaire la commande, sinon ne rien faire)", channelLoupGarou);
                                 makingSure = 1;
                             } else {
@@ -372,6 +387,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                                 created = false;
                                 started = false;
+                                fini = true;
 
                                 send("<@!" + userID + "> a mis fin à la partie. ", channelID);
                                 stopPlay(participantsID);
@@ -439,26 +455,47 @@ async function listEmojiId(channelID, array) {
 }
 
 async function nextTurn() {
-    if (created && started) {
+    if (created && started && !fini) {
         makingSure = 0;
         alt = 0;
 
-        do {
-            turn++;
-            turn %= 6;
-        } while (!(turnOf(turn) === null || turnOf(turn) == undefined || turnOf(turn).length > 0));
+        if (loup.length > 0 && alive.length > loup.length) {
+            do {
+                turn++;
+                turn %= 6;
+            } while (!(turnOf(turn) === null || turnOf(turn) == undefined || turnOf(turn).length > 0));
 
-        for (var i = 0; i < alive.length; i++) {
-            votes.set(alive[i], []);
+            for (var i = 0; i < alive.length; i++) {
+                votes.set(alive[i], []);
+            }
+
+            await delay(2000);
+
+            send("C'est le " + turnOfString(turn), channelLoupGarou);
+
+            await delay(150);
+
+            doTurn(turn);
+        } else {
+            let msg = "";
+            let emot = [];
+            if (loup.length == 0) {
+                msg = "Le village a ganer !!! ";
+                emot = emojiLoup;
+            } else if (alive.length == loup.length) {
+                msg = "Les loup on gagner !!! ";
+                emot = emojiVillage;
+            }
+
+            send(msg, channelLoupGarou, emot);
+            await delay(2000);
+
+            send("<@!" + gameMasterID + "> veuiller faire \"!end\" quand vous aurez fini. ", channelLoupGarou, emot);
+
+            fini = true;
         }
+    } else {
 
-        await delay(2000);
-
-        send("C'est le " + turnOfString(turn), channelLoupGarou);
-
-        await delay(150);
-
-        doTurn(turn);
     }
 }
 
