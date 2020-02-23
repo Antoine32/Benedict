@@ -230,6 +230,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                     created = true;
                     await send("<@!" + userID + "> a créé une nouvelle partie. ", channelLoupGarou);
+                    if (channelID != channelLoupGarou) {
+                        await delay(1000);
+                        await send("<@!" + userID + "> a créé une nouvelle partie. ", channelID);
+                    }
                 }
                 return;
         }
