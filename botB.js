@@ -179,7 +179,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'ping':
-                await bot.sendMessage({
+                bot.sendMessage({
                     to: channelID,
                     message: 'Pong!'
                 });
