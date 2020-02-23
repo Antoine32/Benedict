@@ -23,13 +23,13 @@ const roleMort = "680963175302430772";
 
 const channelLoupGarou = "679142469685739531";
 
-var created = false;
-var started = false;
+let created = false;
+let started = false;
 
-var gameMasterID = "";
+let gameMasterID = "";
 
-var participantsID = [];
-var alive = [];
+let participantsID = [];
+let alive = [];
 
 const roles = ["loup", "loup", "loup", "loup", "voyante", "chasseur", "cupidon", "sorciere", "voleur"];
 
@@ -50,16 +50,16 @@ let morts = [];
 
 let idToRoleAssociation = new Map();
 
-var loup = [];
-var voyante = [];
-var chasseur = [];
-var cupidon = [];
-var sorciere = [];
-var voleur = [];
-var villageois = [];
+let loup = [];
+let voyante = [];
+let chasseur = [];
+let cupidon = [];
+let sorciere = [];
+let voleur = [];
+let villageois = [];
 
-var turn = 0;
-var alt = 0;
+let turn = 0;
+let alt = 0;
 
 const turnDay = 0;
 const turnCupidon = 1;
@@ -92,7 +92,7 @@ logger.add(new logger.transports.Console, {
 });
 logger.level = 'debug';
 // Initialize Discord Bot
-var bot = new Discord.Client({
+let bot = new Discord.Client({
     token: auth.token,
     autorun: true
 });
@@ -129,8 +129,8 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) === '!') {
-        var args = message.substring(1).split(' ');
-        var cmd = args[0].toLocaleLowerCase();
+        let args = message.substring(1).split(' ');
+        let cmd = args[0].toLocaleLowerCase();
         args = args.splice(1);
 
         switch (cmd) {
@@ -191,7 +191,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
                 if (created) {
-                    var i = 0;
+                    let i = 0;
                     do {
                         let id = "";
 
@@ -301,7 +301,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         if (created && !started && (userID === gameMasterID || as(evt.d.member.roles, roleMaitreDeJeu))) {
                             started = true;
 
-                            var choixLoup = true;
+                            let choixLoup = true;
 
                             potionVie = true;
                             potionMort = true;
@@ -329,22 +329,22 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             idToEmojiAssociation = new Map();
                             votes = new Map();
                             alive = [];
-                            var choix = [];
-                            for (var i = 0; i < participantsID.length; i++) {
+                            let choix = [];
+                            for (let i = 0; i < participantsID.length; i++) {
                                 alive.push(participantsID[i]);
                                 choix.push(participantsID[i]);
                                 votes.set(participantsID[i], []);
                             }
 
-                            var role = [];
-                            for (var i = 0; i < roles.length; i++) {
+                            let role = [];
+                            for (let i = 0; i < roles.length; i++) {
                                 role.push(roles[i]);
                             }
 
-                            var first = true;
+                            let first = true;
                             while (choix.length > 0) {
-                                var i = role.length > 0 ? Math.floor(Math.random() * role.length) : -1;
-                                var j = Math.floor(Math.random() * choix.length);
+                                let i = role.length > 0 ? Math.floor(Math.random() * role.length) : -1;
+                                let j = Math.floor(Math.random() * choix.length);
                                 let k = Math.floor(Math.random() * copyEmoji.length);
 
                                 while (i >= 0 && role[i] == "loup" && !choixLoup && asElse(role, "loup")) {
@@ -507,7 +507,7 @@ async function listEmojiId(channelID, array) {
     let msg = "";
     let emot = [];
     console.log(idToEmojiAssociation);
-    for (var i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
         msg += "<@!" + array[i] + "> : " + idToEmojiAssociation.get(array[i]) + " ; ";
         emot.push(idToEmojiAssociation.get(array[i]));
     }
@@ -527,7 +527,7 @@ async function nextTurn() {
                 turn %= 6;
             } while (!(turnOf(turn) === null || turnOf(turn) == undefined || turnOf(turn).length > 0));
 
-            for (var i = 0; i < alive.length; i++) {
+            for (let i = 0; i < alive.length; i++) {
                 votes.set(alive[i], []);
             }
 
@@ -859,7 +859,7 @@ async function send(message, ID, emoji) {
 }
 
 function as(array, match) {
-    for (var i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
         if (array[i] == match) {
             return true;
         }
@@ -868,7 +868,7 @@ function as(array, match) {
 }
 
 function asElse(array, match) {
-    for (var i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
         if (array[i] != match) {
             return true;
         }
@@ -877,7 +877,7 @@ function asElse(array, match) {
 }
 
 async function clearMessage(channelID, limit) {
-    var b = [];
+    let b = [];
 
     if (limit != null) {
         limit = parseInt(limit) + 1;
@@ -886,7 +886,7 @@ async function clearMessage(channelID, limit) {
                 console.log(err);
             } else {
                 b = [];
-                for (var c = 0; c < limit && c < response.length; c++) b.push(response[c].id);
+                for (let c = 0; c < limit && c < response.length; c++) b.push(response[c].id);
                 await bot.deleteMessages({
                     channelID: channelID,
                     messageID: b
@@ -906,7 +906,7 @@ async function clearMessage(channelID, limit) {
                     console.log(err);
                 } else {
                     b = [];
-                    for (var c = 0; c < response.length; c++) b.push(response[c].id);
+                    for (let c = 0; c < response.length; c++) b.push(response[c].id);
                     await bot.deleteMessages({
                         channelID: channelID,
                         messageID: b
@@ -928,7 +928,7 @@ async function play(players, giveRole) {
         giveRole = roleJoueur;
     }
 
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
         let doIt = false;
         let player = players[i];
 
@@ -968,7 +968,7 @@ async function stopPlay(players, giveRole) {
         giveRole = roleJoueur;
     }
 
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
         let doIt = false;
         let player = players[i];
 
@@ -1254,7 +1254,7 @@ async function tourDay() {
                         while (opt.length > 0) {
                             let bigId = 0;
                             let big = count.get(opt[bigId]);
-                            for (var j = 0; j < opt.length; j++) {
+                            for (let j = 0; j < opt.length; j++) {
                                 let buf = count.get(opt[j]);
                                 if (buf > big) {
                                     bigId = j;
@@ -1279,7 +1279,7 @@ async function tourDay() {
 
                         listEmojiId(channelLoupGarou, accusers);
 
-                        for (var i = 0; i < alive.length; i++) {
+                        for (let i = 0; i < alive.length; i++) {
                             votes.set(alive[i], []);
                         }
 
@@ -1327,7 +1327,7 @@ async function tourDay() {
 
                         let bigId = 0;
                         let big = count.get(opt[bigId]);
-                        for (var j = 0; j < opt.length; j++) {
+                        for (let j = 0; j < opt.length; j++) {
                             let buf = count.get(opt[j]);
                             if (buf > big) {
                                 bigId = j;
@@ -1508,7 +1508,7 @@ async function tourLoup() {
                 let equal = false;
                 let equalId = opt[0];
 
-                for (var j = 0; j < opt.length; j++) {
+                for (let j = 0; j < opt.length; j++) {
                     let buf = count.get(opt[j]);
                     if (buf > bigest) {
                         bigest = buf;
@@ -1735,7 +1735,7 @@ async function tourVoleur() {
                             send("Vous vous ête fait volez <@!" + id + "> ! Vous ête maintenant le voleur ! ", id, [vote[j]]);
                             await delay(1000);
                             if (newRole == "loup") {
-                                for (var k = 0; k < loup.length - 1; k++) {
+                                for (let k = 0; k < loup.length - 1; k++) {
                                     send("<@!" + id + "> n'est plus un loup, <@!" + idVoleur + "> est maintenant un loup", loup[k], [idToEmojiAssociation.get(idVoleur)]);
                                     await delay(1000);
                                 }
@@ -1760,7 +1760,7 @@ async function tourVoleur() {
 }
 
 function deleteFromArray(array, match) {
-    for (var i = 0; i < array.length; i++) {
+    for (let i = 0; i < array.length; i++) {
         if (array[i] == match) {
             array.splice(i, 1);
         }
