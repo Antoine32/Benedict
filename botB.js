@@ -215,7 +215,8 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'create':
-                deleteMessage(channelID, evt.d.id);
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
                 if (!started && !created) {
                     clearMessage(channelLoupGarou, null);
 
@@ -241,6 +242,8 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'help':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
                 send("Definition : ... = message ; @ = utilisateur ; :_: = listes de _ ; # = nombre ; / = ou", channelID);
                 await delay(150);
 
