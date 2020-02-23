@@ -435,10 +435,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                 makingSure = 1;
                             } else {
                                 await delay(500);
-                                stopPlay(gameMasterID, roleMaitreDeJeu);
+                                stopPlay([gameMasterID], roleMaitreDeJeu);
                                 gameMasterID = userID;
                                 await delay(500);
-                                play(gameMasterID, roleMaitreDeJeu);
+                                play([gameMasterID], roleMaitreDeJeu);
                                 makingSure = 0;
                             }
                         }
