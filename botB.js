@@ -26,7 +26,7 @@ const channelLoupGarou = "679142469685739531";
 var created = false;
 var started = false;
 
-var gameMasterID = null;
+var gameMasterID = "";
 
 var participantsID = [];
 var alive = [];
