@@ -191,7 +191,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'join':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (created && !started) {
+                if (created) {
                     var i = 0;
                     do {
                         let id = "";
@@ -206,7 +206,11 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                         if (!as(participantsID, id) && participantsID.length < 20) {
                             participantsID.push(id);
-                            await play([id]);
+                            if (started) {
+                                await play([id], roleMort);
+                            } else {
+                                await play([id], roleJoueur);
+                            }
                             await send("<@!" + id + "> a rejoin la partie", channelLoupGarou);
                         }
 
