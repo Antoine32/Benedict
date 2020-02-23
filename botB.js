@@ -1630,8 +1630,12 @@ async function tourVoleur() {
                             switch (newRole) {
                                 case "loup":
                                     loup.push(idVoleur);
+                                    emojiLoup.push(idToEmojiAssociation.get(idVoleur));
+                                    emojiVillage.push(idToEmojiAssociation.get(id));
                                     await delay(200);
                                     loup = deleteFromArray(loup, id);
+                                    emojiLoup = deleteFromArray(emojiLoup, idToEmojiAssociation.get(id));
+                                    emojiVillage = deleteFromArray(emojiVillage, idToEmojiAssociation.get(idVoleur));
                                     break;
                                 case "voyante":
                                     voyante.push(idVoleur);
