@@ -459,7 +459,7 @@ async function nextTurn() {
         makingSure = 0;
         alt = 0;
 
-        if (loup.length > 0 && alive.length > loup.length) {
+        if (loup.length > 0 && alive.length > loup.length && !(couple.length == 2 && alive.length == 2)) {
             do {
                 turn++;
                 turn %= 6;
@@ -483,8 +483,11 @@ async function nextTurn() {
                 msg = "Le village a ganer !!! ";
                 emot = emojiLoup;
             } else if (alive.length == loup.length) {
-                msg = "Les loup on gagner !!! ";
+                msg = "Les loups-garous on gagner !!! ";
                 emot = emojiVillage;
+            } else if (couple.length == 2 && alive.length == 2) {
+                msg = "Le couple a gagner !!! ";
+                emot = [idToEmojiAssociation.get(couple[0]), idToEmojiAssociation.get(couple[1])];
             }
 
             send(msg, channelLoupGarou, emot);
