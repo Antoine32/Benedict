@@ -1119,7 +1119,7 @@ async function tourDay() {
     let approval = true;
     let votePick = [];
 
-    if (alt < 3) {
+    if (alt < 3 && journer > 0) {
         now = new Date();
         let timeLeft = now.getTime() - waitTime;
         if (timeLeft >= votingTime) {
@@ -1284,6 +1284,8 @@ async function tourDay() {
             waitTime += timeLeft / 2;
         }
         approval = false;
+    } else if (journer === 0) {
+        journer++;
     }
 
     return approval;
