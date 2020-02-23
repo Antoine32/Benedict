@@ -734,7 +734,7 @@ async function send(message, ID, emoji) {
                 if (emoji != null) {
                     try {
                         for (let i = 0; i < emoji.length; i++) {
-                            await delay(500);
+                            await delay(750);
                             bot.addReaction({
                                 channelID: ID,
                                 messageID: response.id,
@@ -779,7 +779,7 @@ async function clearMessage(channelID, limit) {
 
     if (limit != null) {
         limit = parseInt(limit) + 1;
-        await bot.getMessages({ channelID: channelID, limit: limit }, async (err, response) => {
+        bot.getMessages({ channelID: channelID, limit: limit }, async (err, response) => {
             if (err) {
                 console.log(err);
             } else {
@@ -799,7 +799,7 @@ async function clearMessage(channelID, limit) {
         });
     } else {
         do {
-            await bot.getMessages({ channelID: channelID, limit: 100 }, async (err, response) => {
+            bot.getMessages({ channelID: channelID, limit: 100 }, async (err, response) => {
                 if (err) {
                     console.log(err);
                 } else {
@@ -1550,36 +1550,78 @@ async function tourSorciere() {
     return approval;
 }
 
-/*async function tourVoyante() {
+async function tourVoleur() {
     let approval = true;
 
-    for (let i = 0; i < voyante.length && approval; i++) {
+    for (let i = 0; i < voleur.length && approval; i++) {
         switch (alt) {
             case 0:
-                send("Quelle joueur voulez-vous voler ? ", voyante[i], emojiChoice);
+                send("Quelle joueur voulez-vous voler ? ", voleur[i], emojiChoice);
                 approval = false;
                 alt = 1;
                 break;
             case 1:
-                if (votes.has(voyante[i])) {
-                    let vote = votes.get(voyante[i]);
+                if (votes.has(voleur[i])) {
+                    let vote = votes.get(voleur[i]);
                     if (vote.length > 0) {
                         let j = 0;
-                        for (; j < vote.length && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === voyante[i]); j++);
+                        for (; j < vote.length && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === voleur[i]); j++);
 
                         if (j < vote.length) {
+                            let idVoleur = voleur[i];
                             let id = emojiToIdAssociation.get(vote[j]);
-                            send("<@!" + id + "> est un " + idToRoleAssociation.get(id) + " ! ", voyante[i], [vote[j]]);
+                            let newRole = idToRoleAssociation.get(id);
+                            idToRoleAssociation.set(id, "voleur");
+                            idToRoleAssociation.set(idVoleur, newRole);
+
+                            voleur.splice(i, 1);
+                            voleur.push(id);
+
+                            switch (newRole) {
+                                case "loup":
+                                    loup = await deleteFromArray(loup, id);
+                                    loup.push(idVoleur);
+                                    break;
+                                case "voyante":
+                                    voyante = await deleteFromArray(voyante, id);
+                                    voyante.push(idVoleur);
+                                    break;
+                                case "chasseur":
+                                    chasseur = await deleteFromArray(chasseur, id);
+                                    chasseur.push(idVoleur);
+                                    break;
+                                case "cupidon":
+                                    cupidon = await deleteFromArray(cupidon, id);
+                                    cupidon.push(idVoleur);
+                                    break;
+                                case "sorciere":
+                                    sorciere = await deleteFromArray(sorciere, id);
+                                    sorciere.push(idVoleur);
+                                    break;
+                                case "voleur":
+                                    voleur = await deleteFromArray(voleur, id);
+                                    voleur.push(idVoleur);
+                                    break;
+                                default:
+                                    villageois = await deleteFromArray(villageois, id);
+                                    villageois.push(idVoleur);
+                                    break;
+                            }
+
+                            send("Vous avez voler <@!" + id + "> et avez aquéri son rôle " + newRole + " <@!" + idVoleur + "> ! ", idVoleur, [idToEmojiAssociation.get(idVoleur)]);
+                            await delay(1000);
+                            send("Vous vous ête fait volez <@!" + id + "> ! Vous ête maintenant le voleur ! ", id, [vote[j]]);
+                            await delay(1000);
                         } else {
-                            send("Votre vote est invalide ! ", voyante[i]);
+                            send("Votre vote est invalide ! ", voleur[i]);
                             approval = false;
                         }
                     } else {
-                        send("Vous n'avez pas voter ! ", voyante[i]);
+                        send("Vous n'avez pas voter ! ", voleur[i]);
                         approval = false;
                     }
                 } else {
-                    send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", voyante[i]);
+                    send("Vous n'avez pas de droit de vote !? Vous devrier le dire a un admin c'est étrange... ", voleur[i]);
                     approval = false;
                 }
                 break;
@@ -1587,4 +1629,13 @@ async function tourSorciere() {
     }
 
     return approval;
-}*/
+}
+
+function deleteFromArray(array, match) {
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] == match) {
+            array.splice(i, 1);
+        }
+    }
+    return array;
+}
