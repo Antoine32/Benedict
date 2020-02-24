@@ -17,6 +17,7 @@ const roleJournal = "678655993923633212";
 const roleWeb = "678659252146929674";
 const roleBotOverlord = "679853889260093512";
 
+const roleMaire = "681321194888495114";
 const roleMaitreDeJeu = "680962987489886234";
 const roleJoueur = "679302521956597760";
 const roleMort = "680963175302430772";
