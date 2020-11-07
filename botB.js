@@ -118,7 +118,7 @@ bot.on('ready', async (evt) => {
     console.log(bot.username + ' - (' + bot.id + ')');
 
     try {
-        const data = fs.readFileSync('/home/pi/Benedict/emoji.txt', 'utf8');
+        const data = fs.readFileSync('./emoji.txt', 'utf8');
         allEmojiList = data.split(" ");
     } catch (err) {
         console.error(err);
