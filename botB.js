@@ -97,13 +97,28 @@ let bot = new Discord.Client({
     autorun: true
 });
 
+bot.on('disconnect', async (evt) => {
+    var minutes = 1000 * 60;
+    var hours = minutes * 60;
+    var days = hours * 24;
+    var years = days * 365;
+    var d = new Date();
+
+    console.log(d.getDate());
+    console.log(d.getHours());
+    console.log(d.getMinutes());
+    console.log(d.getSeconds());
+
+    bot.connect();
+});
+
 bot.on('ready', async (evt) => {
     console.log('Connected');
     console.log('Logged in as: ');
     console.log(bot.username + ' - (' + bot.id + ')');
 
     try {
-        const data = fs.readFileSync('emoji.txt', 'utf8');
+        const data = fs.readFileSync('/home/pi/Benedict/emoji.txt', 'utf8');
         allEmojiList = data.split(" ");
     } catch (err) {
         console.error(err);
@@ -120,7 +135,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             return;
         }
         botoverlord = as(evt.d.member.roles, roleBotOverlord);
-        admin = as(evt.d.member.roles, admin);
+        admin = as(evt.d.member.roles, roleAdmin);
     } catch (Exception) {
         directMessage = true;
         console.log(user + "<@!" + userID + "> : " + message);
@@ -153,7 +168,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'emoji':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (!directMessage && (as(evt.d.member.roles, roleAdmin) || as(evt.d.member.roles, roleBotOverlord))) {
+                if (!directMessage && (admin || botoverlord)) {
                     if (args.length > 0) {
                         listEmojis = message.substr(5).replace(">", "").split(" ");
                         console.log(message);
@@ -165,19 +180,19 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'say':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (!directMessage && (as(evt.d.member.roles, roleAdmin) || as(evt.d.member.roles, roleBotOverlord)) && args.length > 0) {
+                if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     send(message.substr(5), channelID, listEmojis);
                 }
                 return;
             case 'dm':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (!directMessage && (as(evt.d.member.roles, roleAdmin) && as(evt.d.member.roles, roleBotOverlord)) && args.length > 0) {
+                if (!directMessage && (admin && botoverlord) && args.length > 0) {
                     send(message.substr(27), args[0].replace("<@!", "").replace(">", ""), listEmojis);
                 }
                 return;
             case 'clear':
-                if (!directMessage && as(evt.d.member.roles, roleAdmin) && args.length > 0) {
+                if (!directMessage && admin && args.length > 0) {
                     clearMessage(channelID, (args[0].toLowerCase() === "all" ? null : args[0]));
                 }
                 return;
@@ -197,7 +212,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                         if (args.length == 0) {
                             id = userID;
-                        } else if (as(evt.d.member.roles, roleAdmin)) {
+                        } else if (admin) {
                             id = args[i].replace("<@!", "").replace(">", "");
                         } else {
                             break;
