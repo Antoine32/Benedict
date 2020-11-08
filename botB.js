@@ -205,6 +205,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     airMsg = message.substr(11);
+                    console.log("airMsg set to " + airMsg);
                 }
                 return;
             case 'setAirChannel':
@@ -212,6 +213,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                 if (!directMessage && (admin || botoverlord)) {
                     airChannel = channelID;
+                    console.log("airChannel set to " + airChannel);
                 }
                 return;
             case 'setAirAmo':
@@ -219,6 +221,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     airAmo = parseInt(message.substr(11));
+                    console.log("airAmo set to " + airAmo);
                 }
                 return;
             case 'say':
