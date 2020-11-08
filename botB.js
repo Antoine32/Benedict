@@ -189,7 +189,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'emoji':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (!directMessage && (admin || botoverlord)) {
                     if (args.length > 0) {
@@ -201,7 +203,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'setAirMsg':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airMsg = message.substr(11);
@@ -212,7 +216,12 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 if (directMessage) {
                     console.log("channelID: " + channelID);
                 }
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
+                if (directMessage) {
+                    console.log("channelID2: " + channelID);
+                }
 
 
                 if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
@@ -221,7 +230,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'setAirAmo':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airAmo = parseInt(message.substr(11));
@@ -229,14 +240,18 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'say':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     send(message.substr(5), channelID, listEmojis);
                 }
                 return;
             case 'dm':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (!directMessage && (admin && botoverlord) && args.length > 0) {
                     send(message.substr(27), args[0].replace("<@!", "").replace(">", ""), listEmojis);
@@ -257,7 +272,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 });
                 return;
             case 'join':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (created) {
                     let i = 0;
@@ -287,7 +304,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'create':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (!started && !created) {
                     clearMessage(channelLoupGarou, null);
@@ -314,7 +333,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'help':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 let msg = "Definition : ... = message ; @ = utilisateur ; :_: = listes de _ ; # = nombre ; / = ou";
 
