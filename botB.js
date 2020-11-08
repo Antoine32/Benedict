@@ -141,9 +141,7 @@ bot.on('ready', async (evt) => {
         console.error(err);
     }
 
-    async () => {
-        button();
-    }
+    button();
 });
 
 bot.on('message', async (user, userID, channelID, message, evt) => {
