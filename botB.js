@@ -168,7 +168,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) === '!') {
         let args = message.substring(1).split(' ');
-        let cmd = args[0].toLocaleLowerCase();
+        let cmd = args[0];
         args = args.splice(1);
 
         switch (cmd) {
@@ -215,7 +215,6 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'setAirAmo':
-                console.log("allo");
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
