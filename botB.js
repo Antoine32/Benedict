@@ -173,7 +173,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
         switch (cmd) {
             case 'display':
-                if (!directMessage) { deleteMessage(channelID, evt.d.id); }
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
                 if (created && started) {
                     listEmojiId(channelID, alive);
                 }
@@ -207,24 +209,17 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     deleteMessage(channelID, evt.d.id);
                 }
 
-                if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
                     airMsg = message.substr(11);
                     console.log("airMsg set to " + airMsg);
                 }
                 return;
             case 'setAirChannel':
-                if (directMessage) {
-                    console.log("channelID: " + channelID);
-                }
                 if (!directMessage) {
                     deleteMessage(channelID, evt.d.id);
                 }
-                if (directMessage) {
-                    console.log("channelID2: " + channelID);
-                }
 
-
-                if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
                     airChannel = channelID;
                     console.log("airChannel set to " + airChannel);
                 }
@@ -234,7 +229,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     deleteMessage(channelID, evt.d.id);
                 }
 
-                if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
                     airAmo = parseInt(message.substr(11));
                     console.log("airAmo set to " + airAmo);
                 }
@@ -263,9 +258,6 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'ping':
-                if (directMessage) {
-                    console.log("channelID: " + channelID);
-                }
                 bot.sendMessage({
                     to: channelID,
                     message: '!pong'
