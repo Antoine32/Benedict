@@ -209,11 +209,11 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'setAirChannel':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
-
                 if (directMessage) {
                     console.log("channelID: " + channelID);
                 }
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
 
                 if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airChannel = channelID;
@@ -248,6 +248,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'ping':
+                if (directMessage) {
+                    console.log("channelID: " + channelID);
+                }
                 bot.sendMessage({
                     to: channelID,
                     message: '!pong'
