@@ -1871,7 +1871,7 @@ async function button() {
             }
             //console.log(temp);
         } else {
-            await sleep(1000);
+            await sleep(50);
         }
     }
 
