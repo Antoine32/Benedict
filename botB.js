@@ -211,6 +211,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'setAirChannel':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
+                if (directMessage) {
+                    console.log("channelID: " + channelID);
+                }
+
                 if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airChannel = channelID;
                     console.log("airChannel set to " + airChannel);
