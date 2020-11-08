@@ -215,6 +215,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'setAirAmo':
+                console.log("allo");
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
