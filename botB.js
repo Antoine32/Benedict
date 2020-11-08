@@ -201,16 +201,22 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'setAirMsg':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     airMsg = message.substr(11);
                 }
                 return;
             case 'setAirChannel':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
                 if (!directMessage && (admin || botoverlord)) {
                     airChannel = channelID;
                 }
                 return;
             case 'setAirAmo':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
                 if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     airAmo = parseInt(message.substr(11));
                 }
