@@ -40,6 +40,10 @@ const channelLoupGarou = "679142469685739531";
 
 const channelDiscution = "678669416996667403";
 
+let airChannel = "678669416996667403";
+let airMsg = "Air Message";
+let airAmo = 0;
+
 let created = false;
 let started = false;
 
@@ -194,6 +198,27 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     } else {
                         listEmojis = [];
                     }
+                }
+                return;
+            case 'setAirMsg':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
+                if (!directMessage && (admin || botoverlord) && args.length > 0) {
+                    airMsg = message.substr(11);
+                }
+                return;
+            case 'setAirChannel':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
+                if (!directMessage && (admin || botoverlord)) {
+                    airChannel = channelID;
+                }
+                return;
+            case 'setAirAmo':
+                if (!directMessage) deleteMessage(channelID, evt.d.id);
+
+                if (!directMessage && (admin || botoverlord) && args.length > 0) {
+                    airAmo = parseInt(message.substr(11));
                 }
                 return;
             case 'say':
@@ -1823,26 +1848,31 @@ async function button() {
     let as = 0;
 
     while (true) {
-        i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
-        await sleep(50);
+        if (airAmo > 0) {
+            i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
+            await sleep(50);
 
-        dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
-        //temp = conversion(i2c1.readWordSync(URM09_ADDR, TEMP_H_INDEX));
+            dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
+            //temp = conversion(i2c1.readWordSync(URM09_ADDR, TEMP_H_INDEX));
 
-        if (dist <= 20) {
-            if (as == 5) {
-                console.log(dist);
-                send("test", channelDiscution);
+            if (dist <= 20) {
+                if (as == 5) {
+                    console.log(dist);
+                    send(airMsg, airChannel);
+                    airAmo--;
+                }
+
+                if (as < 6) {
+                    as++;
+                }
+                //console.log(dist);
+            } else if (dist <= 300 && as > 0) {
+                as--;
             }
-
-            if (as < 6) {
-                as++;
-            }
-            //console.log(dist);
-        } else if (dist <= 300 && as > 0) {
-            as--;
+            //console.log(temp);
+        } else {
+            await sleep(1000);
         }
-        //console.log(temp);
     }
 
     i2c1.closeSync();
