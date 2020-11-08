@@ -203,7 +203,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'setAirMsg':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (!directMessage && (admin || botoverlord) && args.length > 0) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airMsg = message.substr(11);
                     console.log("airMsg set to " + airMsg);
                 }
@@ -211,7 +211,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'setAirChannel':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (!directMessage && (admin || botoverlord)) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airChannel = channelID;
                     console.log("airChannel set to " + airChannel);
                 }
@@ -219,7 +219,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'setAirAmo':
                 if (!directMessage) deleteMessage(channelID, evt.d.id);
 
-                if (!directMessage && (admin || botoverlord) && args.length > 0) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && channelID == "197481148534882304")) {
                     airAmo = parseInt(message.substr(11));
                     console.log("airAmo set to " + airAmo);
                 }
