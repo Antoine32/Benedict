@@ -1880,7 +1880,7 @@ async function button() {
 
             if (dist <= 20) {
                 if (as == 5) {
-                    console.log(dist);
+                    console.log("dist: " + dist + ", left: " + airAmo);
                     send(airMsg, airChannel);
                     airAmo--;
                 }
