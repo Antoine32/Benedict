@@ -3,6 +3,7 @@ const logger = require('winston');
 const auth = require('./auth.json');
 const fs = require('fs');
 const i2c = require('i2c-bus');
+var gpio = require('rpi-gpio')
 
 const URM09_ADDR = 0x11;
 
@@ -1898,4 +1899,44 @@ async function button() {
     }
 
     i2c1.closeSync();
+}
+
+let i2c1 = i2c.openSync(1);
+let dist = 0;
+i2c1.writeWordSync(URM09_ADDR, CFG_INDEX, (0x00 | 0x20));
+
+var pir = {
+    pin: 12,
+    loopTime: 100, //check the sensor this often
+    tripped: false,
+    value: undefined
+}
+
+var onSetup = function (error) {
+    if (error) console.error(error)
+    return setInterval(readInterval, pir.loopTime)
+}
+
+gpio.setMode(gpio.MODE_RPI)
+gpio.setup(pir.pin, gpio.DIR_IN, onSetup)
+
+var readInterval = async function () {
+    gpio.read(pir.pin, async function (error, value) {
+        // we only want to move on if something changed
+        if (value === pir.tripped) return
+
+        pir.tripped = value
+        if (pir.tripped && airAmo > 0) {
+            i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
+            await sleep(50);
+
+            dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
+
+            if (dist <= 20) {
+                airAmo--;
+                send(airMsg, airChannel);
+                console.log("dist: " + dist + ", left: " + airAmo);
+            }
+        }
+    })
 }
