@@ -1873,19 +1873,19 @@ async function button() {
     while (true) {
         if (airAmo > 0) {
             i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
-            await sleep(25);
+            await sleep(50);
 
             dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
             //temp = conversion(i2c1.readWordSync(URM09_ADDR, TEMP_H_INDEX));
 
             if (dist <= 20) {
-                if (as == 10) {
+                if (as == 5) {
                     airAmo--;
                     send(airMsg, airChannel);
                     console.log("dist: " + dist + ", left: " + airAmo);
                 }
 
-                if (as < 11) {
+                if (as < 6) {
                     as++;
                 }
                 //console.log(dist);
