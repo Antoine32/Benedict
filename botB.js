@@ -1879,15 +1879,14 @@ async function button() {
             //temp = conversion(i2c1.readWordSync(URM09_ADDR, TEMP_H_INDEX));
 
             if (dist <= 20) {
-                if (as == 5) {
+                if (as == 0) {
                     airAmo--;
                     send(airMsg, airChannel);
                     console.log("dist: " + dist + ", left: " + airAmo);
                 }
 
-                if (as < 6) {
-                    as++;
-                }
+                as = 5;
+
                 //console.log(dist);
             } else if (dist <= 300 && as > 0) {
                 as--;
