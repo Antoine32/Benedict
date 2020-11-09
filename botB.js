@@ -1873,7 +1873,7 @@ async function button() {
     while (true) {
         if (airAmo > 0) {
             i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
-            await sleep(10);
+            await sleep(25);
 
             dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
             //temp = conversion(i2c1.readWordSync(URM09_ADDR, TEMP_H_INDEX));
