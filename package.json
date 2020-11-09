@@ -8,6 +8,7 @@
     "delay": "^4.3.0",
     "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
     "i2c-bus": "^5.2.1",
+    "rpi-gpio": "^2.1.7",
     "winston": "^3.2.1"
   }
 }
