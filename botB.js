@@ -258,10 +258,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'ping':
-                bot.sendMessage({
-                    to: channelID,
-                    message: '!pong'
-                });
+                send(channelID, '!pong');
                 return;
             case 'join':
                 if (!directMessage) {
