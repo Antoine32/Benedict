@@ -1856,6 +1856,7 @@ function deleteFromArray(array, match) {
     return array;
 }
 
+/*
 function conversion(rawData) {
     let data = (rawData >> 8) + ((rawData & 0xff) << 8);
     return data;
@@ -1939,4 +1940,4 @@ var readInterval = async function () {
             }
         }
     })
-}
+}*/
