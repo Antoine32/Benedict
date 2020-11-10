@@ -43,4 +43,4 @@ def volt_to_dist(v):
 motion.when_activated = main
 
 while True:
-    socket.isOpen()
+    motion.wait_for_active()
