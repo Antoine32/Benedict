@@ -1,7 +1,7 @@
 const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('./auth.json');
-const delay = require('delay');
+const socket = require('socket.py');
 const fs = require('fs');
 
 const serverID = "678456625895440404";
@@ -23,6 +23,12 @@ const roleJoueur = "679302521956597760";
 const roleMort = "680963175302430772";
 
 const channelLoupGarou = "679142469685739531";
+
+const channelDiscution = "678669416996667403";
+
+let airChl = "678669416996667403";
+let airMsg = "Air Message";
+let airAmo = 0;
 
 let created = false;
 let started = false;
@@ -99,17 +105,34 @@ let bot = new Discord.Client({
     autorun: true
 });
 
+bot.on('disconnect', async (evt) => {
+    var minutes = 1000 * 60;
+    var hours = minutes * 60;
+    var days = hours * 24;
+    var years = days * 365;
+    var d = new Date();
+
+    console.log(d.getDate());
+    console.log(d.getHours());
+    console.log(d.getMinutes());
+    console.log(d.getSeconds());
+
+    bot.connect();
+});
+
 bot.on('ready', async (evt) => {
     console.log('Connected');
     console.log('Logged in as: ');
     console.log(bot.username + ' - (' + bot.id + ')');
 
     try {
-        const data = fs.readFileSync('emoji.txt', 'utf8');
+        const data = fs.readFileSync('./emoji.txt', 'utf8');
         allEmojiList = data.split(" ");
     } catch (err) {
         console.error(err);
     }
+
+    //button();
 });
 
 bot.on('message', async (user, userID, channelID, message, evt) => {
@@ -122,7 +145,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             return;
         }
         botoverlord = as(evt.d.member.roles, roleBotOverlord);
-        admin = as(evt.d.member.roles, admin);
+        admin = as(evt.d.member.roles, roleAdmin);
     } catch (Exception) {
         directMessage = true;
         console.log(user + "<@!" + userID + "> : " + message);
@@ -132,12 +155,14 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) === '!') {
         let args = message.substring(1).split(' ');
-        let cmd = args[0].toLocaleLowerCase();
+        let cmd = args[0];
         args = args.splice(1);
 
         switch (cmd) {
             case 'display':
-                if (!directMessage) { deleteMessage(channelID, evt.d.id); }
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
                 if (created && started) {
                     listEmojiId(channelID, alive);
                 }
@@ -153,9 +178,11 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'emoji':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
-                if (!directMessage && (as(evt.d.member.roles, roleAdmin) || as(evt.d.member.roles, roleBotOverlord))) {
+                if (!directMessage && (admin || botoverlord)) {
                     if (args.length > 0) {
                         listEmojis = message.substr(5).replace(">", "").split(" ");
                         console.log(message);
@@ -164,22 +191,56 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     }
                 }
                 return;
-            case 'say':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+            case 'setAirMsg':
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
-                if (!directMessage && (as(evt.d.member.roles, roleAdmin) || as(evt.d.member.roles, roleBotOverlord)) && args.length > 0) {
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
+                    airMsg = message.substr(11);
+                    console.log("airMsg set to " + airMsg);
+                }
+                return;
+            case 'setAirChl':
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
+
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
+                    airChl = channelID;
+                    console.log("airChl set to " + airChl);
+                }
+                return;
+            case 'setAirAmo':
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
+
+                if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
+                    airAmo = parseInt(message.substr(11));
+                    console.log("airAmo set to " + airAmo);
+                }
+                return;
+            case 'say':
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
+
+                if (!directMessage && (admin || botoverlord) && args.length > 0) {
                     send(message.substr(5), channelID, listEmojis);
                 }
                 return;
             case 'dm':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
-                if (!directMessage && (as(evt.d.member.roles, roleAdmin) && as(evt.d.member.roles, roleBotOverlord)) && args.length > 0) {
+                if (!directMessage && (admin && botoverlord) && args.length > 0) {
                     send(message.substr(27), args[0].replace("<@!", "").replace(">", ""), listEmojis);
                 }
                 return;
             case 'clear':
-                if (!directMessage && as(evt.d.member.roles, roleAdmin) && args.length > 0) {
+                if (!directMessage && admin && args.length > 0) {
                     clearMessage(channelID, (args[0].toLowerCase() === "all" ? null : args[0]));
                 }
                 return;
@@ -190,7 +251,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 });
                 return;
             case 'join':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (created) {
                     let i = 0;
@@ -199,7 +262,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                         if (args.length == 0) {
                             id = userID;
-                        } else if (as(evt.d.member.roles, roleAdmin)) {
+                        } else if (admin) {
                             id = args[i].replace("<@!", "").replace(">", "");
                         } else {
                             break;
@@ -220,12 +283,14 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
                 return;
             case 'create':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 if (!started && !created) {
                     clearMessage(channelLoupGarou, null);
 
-                    await delay(1000);
+                    await sleep(1000);
 
                     gameMasterID = userID;
 
@@ -234,20 +299,22 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                     await play([gameMasterID], roleMaitreDeJeu);
 
-                    await delay(1000);
+                    await sleep(1000);
 
                     await play([gameMasterID]);
 
                     created = true;
                     await send("<@!" + userID + "> a créé une nouvelle partie. ", channelLoupGarou);
                     if (channelID != channelLoupGarou) {
-                        await delay(1000);
+                        await sleep(1000);
                         await send("<@!" + userID + "> a créé une nouvelle partie. ", channelID);
                     }
                 }
                 return;
             case 'help':
-                if (!directMessage) deleteMessage(channelID, evt.d.id);
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
 
                 let msg = "Definition : ... = message ; @ = utilisateur ; :_: = listes de _ ; # = nombre ; / = ou";
 
@@ -290,7 +357,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
 
                 msg += "\n!kill @ => Si maitre de jeu ou quand le chasseur meurt, tue @";
 
-                await delay(1000);
+                await sleep(1000);
                 send(msg, channelID);
                 return;
         }
@@ -397,14 +464,14 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                 idToRoleAssociation.set(choix[j], (i >= 0 ? role[i] : "villageois"));
                                 emojiChoice.push(copyEmoji[k]);
 
-                                await delay(200);
+                                await sleep(200);
 
                                 copyEmoji.splice(k, 1);
                                 choix.splice(j, 1);
                                 if (i >= 0) role.splice(i, 1);
                             }
 
-                            await delay(1000);
+                            await sleep(1000);
 
                             for (let i = 0; i < loup.length; i++) {
                                 for (let j = 0; j < loup.length; j++) {
@@ -414,14 +481,14 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                                 }
 
                                 if (loup.length > 1) {
-                                    await delay(100);
+                                    await sleep(100);
                                     send("Vous devriez créer un groupe DM avec " + ((loup.length > 2) ? "eu" : "lui"), loup[i]);
                                 }
                             }
 
                             send("<@!" + userID + "> a fait débuter la partie. ", channelID);
 
-                            await delay(1000);
+                            await sleep(1000);
 
                             listEmojiId(channelLoupGarou, alive);
                         }
@@ -435,15 +502,15 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                             } else {
                                 stopPlay(participantsID);
 
-                                await delay(1000);
+                                await sleep(1000);
 
                                 stopPlay(participantsID, roleMort);
 
-                                await delay(1000);
+                                await sleep(1000);
 
                                 stopPlay(participantsID, roleMaitreDeJeu);
 
-                                await delay(200);
+                                await sleep(200);
 
                                 gameMasterID = null;
                                 participantsID = [];
@@ -487,14 +554,14 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                         deleteMessage(channelID, evt.d.id);
                         if (created && as(evt.d.member.roles, roleAdmin)) {
                             if (makingSure == 0) {
-                                await delay(500);
+                                await sleep(500);
                                 send("<@!" + userID + ">, voulez-vous vraiment remplacer <@!" + gameMasterID + "> de force ? (si oui refaire la commande, sinon ne rien faire)", channelLoupGarou);
                                 makingSure = 1;
                             } else {
-                                await delay(500);
+                                await sleep(500);
                                 stopPlay([gameMasterID], roleMaitreDeJeu);
                                 gameMasterID = userID;
-                                await delay(500);
+                                await sleep(500);
                                 play([gameMasterID], roleMaitreDeJeu);
                                 makingSure = 0;
                             }
@@ -505,6 +572,11 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
     }
 });
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 async function listEmojiId(channelID, array) {
     let msg = "";
     let emot = [];
@@ -513,7 +585,7 @@ async function listEmojiId(channelID, array) {
         msg += "<@!" + array[i] + "> : " + idToEmojiAssociation.get(array[i]) + " ; ";
         emot.push(idToEmojiAssociation.get(array[i]));
     }
-    await delay(100);
+    await sleep(100);
 
     send(msg, channelID, emot);
 }
@@ -536,11 +608,11 @@ async function nextTurn() {
                 votes.set(alive[i], []);
             }
 
-            await delay(2000);
+            await sleep(2000);
 
             send("C'est le " + turnOfString(turn), channelLoupGarou);
 
-            await delay(150);
+            await sleep(150);
 
             doTurn(turn);
         } else {
@@ -558,7 +630,7 @@ async function nextTurn() {
             }
 
             send(msg, channelLoupGarou, emot);
-            await delay(2000);
+            await sleep(2000);
 
             send("<@!" + gameMasterID + "> veuiller faire \"!end\" quand vous aurez fini. ", channelLoupGarou);
 
@@ -841,7 +913,7 @@ async function send(message, ID, emoji) {
                 if (emoji != null) {
                     try {
                         for (let i = 0; i < emoji.length; i++) {
-                            await delay(750);
+                            await sleep(750);
                             bot.addReaction({
                                 channelID: ID,
                                 messageID: response.id,
@@ -946,7 +1018,7 @@ async function play(players, giveRole) {
                 if (err) {
                     logger.error(err);
                     doIt = true;
-                    await delay(200);
+                    await sleep(200);
                 } else {
                     console.log(response);
                     doIt = false;
@@ -958,7 +1030,7 @@ async function play(players, giveRole) {
                     if (err) {
                         logger.error(err);
                         doIt = true;
-                        await delay(200);
+                        await sleep(200);
                     } else {
                         doIt = !as(response.roles, giveRole);
                     }
@@ -986,7 +1058,7 @@ async function stopPlay(players, giveRole) {
                 if (err) {
                     logger.error(err);
                     doIt = true;
-                    await delay(200);
+                    await sleep(200);
                 } else {
                     console.log(response);
                     doIt = false;
@@ -998,7 +1070,7 @@ async function stopPlay(players, giveRole) {
                     if (err) {
                         logger.error(err);
                         doIt = true;
-                        await delay(200);
+                        await sleep(200);
                     } else {
                         doIt = as(response.roles, giveRole);
                     }
@@ -1092,7 +1164,7 @@ async function kill(ID) {
                 let roleEst = await idToRoleAssociation.get(ID);
                 pass = true;
 
-                await delay(500);
+                await sleep(500);
 
                 switch (roleEst) {
                     case 'loup':
@@ -1168,9 +1240,9 @@ async function kill(ID) {
 
                 let msg = "<@!" + ID + "> est est mort ! Il était un " + roleEst + " ! ";
                 send(msg, channelLoupGarou, emot);
-                await delay(500);
+                await sleep(500);
                 stopPlay([ID], roleJoueur);
-                await delay(150);
+                await sleep(150);
                 play([ID], roleMort);
                 break;
             }
@@ -1210,15 +1282,24 @@ async function tourDay() {
                 case 0:
                     for (let i = 0; i < morts.length; i++) {
                         if (await kill(morts[i]) === true) {
-                            await delay(500);
+                            await sleep(500);
                         }
                     }
                     morts = [];
+<<<<<<< HEAD
                     alt = 1;
                 case 1:
                     send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
 
                     await delay(150);
+=======
+
+                    await sleep(1000);
+
+                    send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
+
+                    await sleep(159);
+>>>>>>> 2353ec24a880f6183aea6e43f5e3864cad554576
 
                     listEmojiId(channelLoupGarou, alive);
 
@@ -1287,7 +1368,7 @@ async function tourDay() {
 
                         send("Qui ferez-vous bruler sur le bucher ? (phase final - faire des débats) ", channelLoupGarou);
 
-                        await delay(1500);
+                        await sleep(1500);
 
                         listEmojiId(channelLoupGarou, accusers);
 
@@ -1350,7 +1431,7 @@ async function tourDay() {
                         let dead = opt[bigId];
 
                         if (await kill(dead) === true) {
-                            await delay(500);
+                            await sleep(500);
                         }
 
                         approval = false;
@@ -1464,9 +1545,9 @@ async function tourCupidon() {
                             if (k < vote.length) {
                                 couple = [emojiToIdAssociation.get(vote[j]), emojiToIdAssociation.get(vote[k])];
                                 send("<@!" + couple[0] + "> est maintenant en couple avec <@!" + couple[1] + "> ! ", cupidon[i], [vote[j], vote[k]]);
-                                await delay(500);
+                                await sleep(500);
                                 send("Vous ête maintenant en couple avec <@!" + couple[1] + "> ! ", couple[0], [vote[k]]);
-                                await delay(500);
+                                await sleep(500);
                                 send("Vous ête maintenant en couple avec <@!" + couple[0] + "> ! ", couple[1], [vote[j]]);
                             } else {
                                 send("Votre vote est invalide ! ", cupidon[i]);
@@ -1596,7 +1677,7 @@ async function tourLoup() {
                     }
                 }
 
-                await delay(150);
+                await sleep(150);
 
                 let msg, emo;
 
@@ -1613,7 +1694,7 @@ async function tourLoup() {
                 for (let i = 0; i < loup.length; i++) {
                     send(msg, loup[i], emo);
                     votes.set(loup[i], []);
-                    await delay(2000);
+                    await sleep(2000);
                 }
             }
             break;
@@ -1644,7 +1725,7 @@ async function tourSorciere() {
                     }
                 }
 
-                await delay(250);
+                await sleep(250);
 
                 let message = "";
                 let emote = [];
@@ -1659,7 +1740,7 @@ async function tourSorciere() {
                     emote.push('🤢');
                 }
 
-                await delay(250);
+                await sleep(250);
                 send(message, sorciere[i], emote);
 
                 approval = false;
@@ -1675,7 +1756,7 @@ async function tourSorciere() {
                             let mort = potionMort && (alive.length - morts.length) > 1;
                             for (; j < vote.length && (!(vote[j] === '😇' && vie) && vote[j] != '😐' && !(vote[j] === '🤢' && mort)); j++);
 
-                            await delay(150);
+                            await sleep(150);
 
                             if (j < vote.length) {
                                 switch (vote[j]) {
@@ -1769,51 +1850,51 @@ async function tourVoleur() {
                                     loup.push(idVoleur);
                                     emojiLoup.push(idToEmojiAssociation.get(idVoleur));
                                     emojiVillage.push(idToEmojiAssociation.get(id));
-                                    await delay(200);
+                                    await sleep(200);
                                     loup = deleteFromArray(loup, id);
                                     emojiLoup = deleteFromArray(emojiLoup, idToEmojiAssociation.get(id));
                                     emojiVillage = deleteFromArray(emojiVillage, idToEmojiAssociation.get(idVoleur));
                                     break;
                                 case "voyante":
                                     voyante.push(idVoleur);
-                                    await delay(200);
+                                    await sleep(200);
                                     voyante = deleteFromArray(voyante, id);
                                     break;
                                 case "chasseur":
                                     chasseur.push(idVoleur);
-                                    await delay(200);
+                                    await sleep(200);
                                     chasseur = deleteFromArray(chasseur, id);
                                     break;
                                 case "cupidon":
                                     cupidon.push(idVoleur);
-                                    await delay(200);
+                                    await sleep(200);
                                     cupidon = deleteFromArray(cupidon, id);
                                     break;
                                 case "sorciere":
                                     sorciere.push(idVoleur);
-                                    await delay(200);
+                                    await sleep(200);
                                     sorciere = deleteFromArray(sorciere, id);
                                     break;
                                 case "voleur":
                                     voleur.push(idVoleur);
-                                    await delay(200);
+                                    await sleep(200);
                                     voleur = deleteFromArray(voleur, id);
                                     break;
                                 default:
                                     villageois.push(idVoleur);
-                                    await delay(200);
+                                    await sleep(200);
                                     villageois = deleteFromArray(villageois, id);
                                     break;
                             }
 
                             send("Vous avez voler <@!" + id + "> et avez aquéri son rôle " + newRole + " <@!" + idVoleur + "> ! ", idVoleur, [idToEmojiAssociation.get(idVoleur)]);
-                            await delay(1000);
+                            await sleep(1000);
                             send("Vous vous ête fait volez <@!" + id + "> ! Vous ête maintenant le voleur ! ", id, [vote[j]]);
-                            await delay(1000);
+                            await sleep(1000);
                             if (newRole == "loup") {
                                 for (let k = 0; k < loup.length - 1; k++) {
                                     send("<@!" + id + "> n'est plus un loup, <@!" + idVoleur + "> est maintenant un loup", loup[k], [idToEmojiAssociation.get(idVoleur)]);
-                                    await delay(1000);
+                                    await sleep(1000);
                                 }
                             }
                         } else {
@@ -1843,3 +1924,11 @@ function deleteFromArray(array, match) {
     }
     return array;
 }
+
+socket.on('channel_2', (data) => {
+    if (airAmo > 0) {
+        airAmo--;
+        send(airMsg, airChl);
+        console.log("dist: " + dist + ", left: " + airAmo);
+    }
+});
