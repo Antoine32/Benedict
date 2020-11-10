@@ -1,24 +1,8 @@
 const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('./auth.json');
+const socket = require('socket.py');
 const fs = require('fs');
-const i2c = require('i2c-bus');
-var gpio = require('rpi-gpio')
-
-const URM09_ADDR = 0x11;
-
-const SLAVEADDR_INDEX = 0x00;
-const PID_INDEX = 0x01;
-const VERSION_INDEX = 0x02;
-
-const DIST_H_INDEX = 0x03;
-const DIST_L_INDEX = 0x04;
-
-const TEMP_H_INDEX = 0x05;
-const TEMP_L_INDEX = 0x06;
-
-const CFG_INDEX = 0x07;
-const CMD_INDEX = 0x08;
 
 const serverID = "678456625895440404";
 
@@ -1856,88 +1840,10 @@ function deleteFromArray(array, match) {
     return array;
 }
 
-/*
-function conversion(rawData) {
-    let data = (rawData >> 8) + ((rawData & 0xff) << 8);
-    return data;
-}
-
-async function button() {
-    let i2c1 = i2c.openSync(1);
-    i2c1.writeWordSync(URM09_ADDR, CFG_INDEX, (0x00 | 0x20));
-    await sleep(100);
-
-    let dist = 0;
-    //let temp = 0;
-
-    let as = 0;
-
-    while (true) {
-        if (airAmo > 0) {
-            i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
-            await sleep(10);
-
-            dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
-            //temp = conversion(i2c1.readWordSync(URM09_ADDR, TEMP_H_INDEX));
-
-            if (dist <= 20) {
-                if (as == 0) {
-                    airAmo--;
-                    send(airMsg, airChannel);
-                    console.log("dist: " + dist + ", left: " + airAmo);
-                }
-
-                as = 10;
-
-                //console.log(dist);
-            } else if (dist <= 300 && as > 0) {
-                as--;
-            }
-            //console.log(temp);
-        } else {
-            await sleep(50);
-        }
+socket.on('channel_1', (data) => {
+    if (airAmo > 0) {
+        airAmo--;
+        send(airMsg, airChannel);
+        console.log("dist: " + dist + ", left: " + airAmo);
     }
-
-    i2c1.closeSync();
-}
-
-let i2c1 = i2c.openSync(1);
-let dist = 0;
-i2c1.writeWordSync(URM09_ADDR, CFG_INDEX, (0x00 | 0x20));
-
-var pir = {
-    pin: 12,
-    loopTime: 100, //check the sensor this often
-    tripped: false,
-    value: undefined
-}
-
-var onSetup = function (error) {
-    if (error) console.error(error)
-    return setInterval(readInterval, pir.loopTime)
-}
-
-gpio.setMode(gpio.MODE_RPI)
-gpio.setup(pir.pin, gpio.DIR_IN, onSetup)
-
-var readInterval = async function () {
-    gpio.read(pir.pin, async function (error, value) {
-        // we only want to move on if something changed
-        if (value === pir.tripped) return
-
-        pir.tripped = value
-        if (pir.tripped && airAmo > 0) {
-            i2c1.writeWordSync(URM09_ADDR, CMD_INDEX, 0x01);
-            await sleep(50);
-
-            dist = conversion(i2c1.readWordSync(URM09_ADDR, DIST_H_INDEX));
-
-            if (dist <= 20) {
-                airAmo--;
-                send(airMsg, airChannel);
-                console.log("dist: " + dist + ", left: " + airAmo);
-            }
-        }
-    })
-}*/
+});
