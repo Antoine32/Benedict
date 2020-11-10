@@ -1,7 +1,7 @@
 const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('./auth.json');
-const socket = require('socket.py');
+//const socket = require('socket.py');
 const fs = require('fs');
 
 const serverID = "678456625895440404";
@@ -23,8 +23,6 @@ const roleJoueur = "679302521956597760";
 const roleMort = "680963175302430772";
 
 const channelLoupGarou = "679142469685739531";
-
-const channelDiscution = "678669416996667403";
 
 let airChl = "678669416996667403";
 let airMsg = "Air Message";
@@ -133,13 +131,13 @@ bot.on('ready', async (evt) => {
     }
 });
 
-socket.on('channel_2', (data) => {
+/*socket.on('channel_2', (data) => {
     if (airAmo > 0) {
         airAmo--;
         send(airMsg, airChl);
         console.log("dist: " + dist + ", left: " + airAmo);
     }
-});
+});*/
 
 bot.on('message', async (user, userID, channelID, message, evt) => {
     let directMessage = false;
