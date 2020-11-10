@@ -135,7 +135,7 @@ socket.on('channel_1', (data) => {
     if (airAmo > 0) {
         airAmo--;
         send(airMsg, airChl);
-        console.log("dist: " + dist + ", left: " + airAmo);
+        console.log("dist: " + data + ", left: " + airAmo);
     }
 });
 

@@ -28,7 +28,7 @@ def main():
     dist = volt_to_dist(volts)
 
     if dist <= 50:
-        msg = "dist: " + str(dist)
+        msg = str(dist)
         socket.write('channel_1', msg)
         print(msg)
 
