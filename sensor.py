@@ -30,7 +30,7 @@ def main():
     print(msg)
 
     if dist <= 50:
-        socket.write('channel_1', msg)
+        socket.write('channel_2', msg)
 
 
 def volt_to_dist(v):

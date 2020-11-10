@@ -131,7 +131,7 @@ bot.on('ready', async (evt) => {
     }
 });
 
-socket.on('channel_1', (data) => {
+socket.on('channel_2', (data) => {
     if (airAmo > 0) {
         airAmo--;
         send(airMsg, airChl);
