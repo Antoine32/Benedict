@@ -1149,6 +1149,7 @@ async function kill(ID) {
                 }
 
                 if (ID == maireID) {
+                    
                     maireID = "";
                 }
 
@@ -1201,7 +1202,7 @@ async function tourDay() {
     let approval = true;
     let votePick = [];
 
-    if (alt < 4 && maireID.length > 0 && journer > 0) {
+    if (alt < 4 && journer > 0) {
         now = new Date();
         let timeLeft = now.getTime() - waitTime;
         if (timeLeft >= votingTime) {
@@ -1215,7 +1216,6 @@ async function tourDay() {
                     morts = [];
                     alt = 1;
                 case 1:
-
                     send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
 
                     await delay(150);
