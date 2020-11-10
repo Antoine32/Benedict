@@ -1286,20 +1286,12 @@ async function tourDay() {
                         }
                     }
                     morts = [];
-<<<<<<< HEAD
-                    alt = 1;
-                case 1:
-                    send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
-
-                    await delay(150);
-=======
 
                     await sleep(1000);
 
                     send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
 
                     await sleep(159);
->>>>>>> 2353ec24a880f6183aea6e43f5e3864cad554576
 
                     listEmojiId(channelLoupGarou, alive);
 
