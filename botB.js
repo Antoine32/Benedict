@@ -131,14 +131,14 @@ bot.on('ready', async (evt) => {
     } catch (err) {
         console.error(err);
     }
+});
 
-    socket.on('channel_2', (data) => {
-        if (airAmo > 0) {
-            airAmo--;
-            send(airMsg, airChl);
-            console.log("dist: " + dist + ", left: " + airAmo);
-        }
-    });
+socket.on('channel_2', (data) => {
+    if (airAmo > 0) {
+        airAmo--;
+        send(airMsg, airChl);
+        console.log("dist: " + dist + ", left: " + airAmo);
+    }
 });
 
 bot.on('message', async (user, userID, channelID, message, evt) => {
