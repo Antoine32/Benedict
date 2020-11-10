@@ -25,7 +25,7 @@ const channelLoupGarou = "679142469685739531";
 
 const channelDiscution = "678669416996667403";
 
-let airChannel = "678669416996667403";
+let airChl = "678669416996667403";
 let airMsg = "Air Message";
 let airAmo = 0;
 
@@ -199,14 +199,14 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     console.log("airMsg set to " + airMsg);
                 }
                 return;
-            case 'setAirChannel':
+            case 'setAirChl':
                 if (!directMessage) {
                     deleteMessage(channelID, evt.d.id);
                 }
 
                 if ((!directMessage && (admin || botoverlord)) || (directMessage && userID == auth.me)) {
-                    airChannel = channelID;
-                    console.log("airChannel set to " + airChannel);
+                    airChl = channelID;
+                    console.log("airChl set to " + airChl);
                 }
                 return;
             case 'setAirAmo':
@@ -1843,7 +1843,7 @@ function deleteFromArray(array, match) {
 socket.on('channel_2', (data) => {
     if (airAmo > 0) {
         airAmo--;
-        send(airMsg, airChannel);
+        send(airMsg, airChl);
         console.log("dist: " + dist + ", left: " + airAmo);
     }
 });
