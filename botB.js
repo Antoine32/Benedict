@@ -132,7 +132,13 @@ bot.on('ready', async (evt) => {
         console.error(err);
     }
 
-    //button();
+    socket.on('channel_2', (data) => {
+        if (airAmo > 0) {
+            airAmo--;
+            send(airMsg, airChl);
+            console.log("dist: " + dist + ", left: " + airAmo);
+        }
+    });
 });
 
 bot.on('message', async (user, userID, channelID, message, evt) => {
@@ -1221,7 +1227,7 @@ async function kill(ID) {
                 }
 
                 if (ID == maireID) {
-                    
+
                     maireID = "";
                 }
 
@@ -1916,11 +1922,3 @@ function deleteFromArray(array, match) {
     }
     return array;
 }
-
-socket.on('channel_2', (data) => {
-    if (airAmo > 0) {
-        airAmo--;
-        send(airMsg, airChl);
-        console.log("dist: " + dist + ", left: " + airAmo);
-    }
-});
