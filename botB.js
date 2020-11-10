@@ -27,6 +27,7 @@ const channelLoupGarou = "679142469685739531";
 let created = false;
 let started = false;
 
+let maireID = "";
 let gameMasterID = "";
 
 let participantsID = [];
@@ -525,7 +526,10 @@ async function nextTurn() {
         if (loup.length > 0 && alive.length > loup.length && !(couple.length == 2 && alive.length == 2)) {
             do {
                 turn++;
-                turn %= 6;
+                if (turn > 5) {
+                    journer++;
+                    turn = 0;
+                }
             } while (!(turnOf(turn) === null || turnOf(turn) == undefined || turnOf(turn).length > 0));
 
             for (let i = 0; i < alive.length; i++) {
@@ -1144,6 +1148,10 @@ async function kill(ID) {
                         break;
                 }
 
+                if (ID == maireID) {
+                    maireID = "";
+                }
+
                 emot.push(idToEmojiAssociation.get(ID));
                 emojiToIdAssociation.delete(emot);
                 idToEmojiAssociation.delete(ID);
@@ -1193,7 +1201,7 @@ async function tourDay() {
     let approval = true;
     let votePick = [];
 
-    if (alt < 3 && journer > 0) {
+    if (alt < 4 && maireID.length > 0 && journer > 0) {
         now = new Date();
         let timeLeft = now.getTime() - waitTime;
         if (timeLeft >= votingTime) {
@@ -1205,22 +1213,25 @@ async function tourDay() {
                         }
                     }
                     morts = [];
-
-                    await delay(1000);
+                    alt = 1;
+                case 1:
 
                     send("(jour " + journer + ") Qui acusez-vous ? (phase préliminaire) ", channelLoupGarou);
 
-                    await delay(159);
+                    await delay(150);
 
                     listEmojiId(channelLoupGarou, alive);
+
+                    for (let i = 0; i < alive.length; i++) {
+                        votes.set(alive[i], []);
+                    }
 
                     now = new Date();
                     waitTime = now.getTime();
                     approval = false;
-                    journer++;
-                    alt = 1;
+                    alt = 2;
                     break;
-                case 1:
+                case 2:
                     for (let i = 0; i < alive.length; i++) {
                         if (votes.has(alive[i])) {
                             let vote = votes.get(alive[i]);
@@ -1287,7 +1298,7 @@ async function tourDay() {
                         now = new Date();
                         waitTime = now.getTime();
                         approval = false;
-                        alt = 2;
+                        alt = 3;
                     } else {
                         send("Personne n'as voter ! ", channelLoupGarou);
                         now = new Date();
@@ -1295,7 +1306,7 @@ async function tourDay() {
                         approval = false;
                     }
                     break;
-                case 2:
+                case 3:
                     for (let i = 0; i < alive.length && approval; i++) {
                         if (votes.has(alive[i])) {
                             let vote = votes.get(alive[i]);
@@ -1343,7 +1354,7 @@ async function tourDay() {
                         }
 
                         approval = false;
-                        avt = 3;
+                        avt = 4;
                     } else {
                         send("Il reste des gens qui n'on pas voter ! ", channelLoupGarou);
                         now = new Date();
@@ -1358,8 +1369,72 @@ async function tourDay() {
             waitTime += timeLeft / 2;
         }
         approval = false;
-    } else if (journer === 0) {
-        journer++;
+    } else if (journer == 0) {
+        switch (alt) {
+            case 0:
+            case 1:
+                send("Qui voulez-vous comme maire ? ", channelLoupGarou, emojiChoice);
+                approval = false;
+                alt = 2;
+                break;
+            case 2:
+                for (let i = 0; i < alive.length && approval; i++) {
+                    if (votes.has(alive[i])) {
+                        let vote = votes.get(alive[i]);
+                        if (vote.length > 0) {
+                            let j = vote.length - 1;
+                            for (; j >= 0 && (!as(emojiChoice, vote[j]) || emojiToIdAssociation.get(vote[j]) === alive[i]); j--);
+
+                            if (j < vote.length) {
+                                let id = emojiToIdAssociation.get(vote[j]);
+                                votePick.push(id);
+                            } else {
+                                approval = false;
+                            }
+                        }
+                    }
+                }
+
+                if (approval && votePick.length > 0) {
+                    let count = new Map();
+                    let opt = [];
+
+                    for (let i = 0; i < votePick.length; i++) {
+                        if (count.has(votePick[i])) {
+                            count.set(votePick[i], count.get(votePick[i]) + 1);
+                        } else {
+                            count.set(votePick[i], 1);
+                            opt.push(votePick[i]);
+                        }
+                    }
+
+                    let bigId = 0;
+                    let big = count.get(opt[bigId]);
+                    for (let j = 0; j < opt.length; j++) {
+                        let buf = count.get(opt[j]);
+                        if (buf > big) {
+                            bigId = j;
+                            big = buf;
+                        }
+                    }
+
+                    let id = opt[bigId];
+
+                    await delay(1000);
+
+                    send("Le maire est maintenant <@!" + id + "> ! ", channelLoupGarou, [idToEmojiAssociation.get(id)]);
+
+                    await delay(1000);
+
+                    play([id], roleMaire);
+
+                    alt = 1;
+                    approval = false;
+                } else {
+                    approval = false;
+                }
+                break;
+        }
     }
 
     return approval;
