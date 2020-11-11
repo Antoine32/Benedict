@@ -7,7 +7,7 @@ tmux \
   select-layout even-vertical
 
 echo "Bot running"
-sleep 30s
+sleep 5s
 
 tmux \
   new-session -d -s Sensor "python3 sensor.py ; read" \; \
