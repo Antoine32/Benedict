@@ -29,7 +29,7 @@ def main():
     msg = str(dist)
     print(msg)
 
-    if dist <= 50:
+    if dist <= 30:
         socket.write('channel_2', msg)
 
 
