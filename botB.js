@@ -255,10 +255,11 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 });
                 return;
             case 'test':
-                let a = bot.getUser({ userID: 854788076107071528 });
+                let ida = args[0].replace("<@!", "").replace(">", "")
+                let a = bot.getUser({ userID: ida });
                 bot.sendMessage({
                     to: channelID,
-                    message: "info: " + a
+                    message: "id: " + ida + "\ninfo: " + a
                 });
                 return;
             case 'join':
