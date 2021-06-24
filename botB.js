@@ -256,7 +256,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 return;
             case 'test':
                 let a = bot.getUser({ userID: 854788076107071528 });
-                print("info" + a)
+                bot.sendMessage({
+                    to: channelID,
+                    message: "info: " + a
+                });
                 return;
             case 'join':
                 if (!directMessage) {
