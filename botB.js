@@ -240,7 +240,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
 
                 if ((admin && botoverlord) && args.length > 0) {
-                    send(message.substr(27), args[0].replace("<@!", "").replace(">", ""), listEmojis);
+                    send(message.substr(27) + args[0].replace("<@!", "").replace(">", ""), args[0].replace("<@!", "").replace(">", ""), listEmojis);
                 }
                 return;
             case 'clear':
