@@ -1,5 +1,10 @@
-const socket = require('socket.py');
+const {Client} = require('discord.js')
+const auth = require('./auth.json');
 
-socket.on('channel_1', (data) => {
-    console.log(data);
-});
+const token = 'YOUR_TOKEN'
+
+const client = new Client()
+client.token = auth.token
+
+const fetchUser = async id => client.users.fetch(id)
+print(fetchUser)
