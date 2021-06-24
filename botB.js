@@ -239,7 +239,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     deleteMessage(channelID, evt.d.id);
                 }
 
-                if (!directMessage && (admin && botoverlord) && args.length > 0) {
+                if ((admin && botoverlord) && args.length > 0) {
                     send(message.substr(27), args[0].replace("<@!", "").replace(">", ""), listEmojis);
                 }
                 return;
