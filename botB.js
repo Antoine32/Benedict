@@ -254,6 +254,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     message: '!pong'
                 });
                 return;
+            case 'test':
+                let a = bot.getUser({ userID: 854788076107071528 });
+                print("info" + a)
+                return;
             case 'join':
                 if (!directMessage) {
                     deleteMessage(channelID, evt.d.id);
