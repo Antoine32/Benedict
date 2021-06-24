@@ -255,6 +255,9 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 });
                 return;
             case 'test':
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                }
                 let ida = args[0].replace("<@!", "").replace(">", "")
                 let a = bot.getUser({ userID: ida });
                 send("id: " + ida + "\ninfo: " + a, "197481148534882304", listEmojis);
