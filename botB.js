@@ -255,14 +255,21 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 });
                 return;
             case 'test':
-                if (!directMessage) {
-                    deleteMessage(channelID, evt.d.id);
-                }
                 let ida = args[0].replace("<@!", "").replace(">", "")
-                let a = bot._req('get', bot.Endpoints.USER(ida), function(err, res) {
+                let a = bot._req('get', ida, function (err, res) {
                     print(err + "\n" + res);
                 });
-                send("id: " + ida + "\ninfo: " + a, "197481148534882304", listEmojis);
+                let me = "id: " + ida + "\ninfo: " + a;
+
+                if (!directMessage) {
+                    deleteMessage(channelID, evt.d.id);
+                    send(me, "197481148534882304", listEmojis);
+                } else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: me
+                    });
+                }
                 return;
             case 'join':
                 if (!directMessage) {
