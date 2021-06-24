@@ -257,10 +257,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
             case 'test':
                 let ida = args[0].replace("<@!", "").replace(">", "")
                 let a = bot.getUser({ userID: ida });
-                bot.sendMessage({
-                    to: channelID,
-                    message: "id: " + ida + "\ninfo: " + a
-                });
+                send("id: " + ida + "\ninfo: " + a, "197481148534882304", listEmojis);
                 return;
             case 'join':
                 if (!directMessage) {
