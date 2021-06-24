@@ -261,6 +261,10 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 let ida = args[0].replace("<@!", "").replace(">", "")
                 let a = bot._req('get', bot.Endpoints.USER(ida));
                 send("id: " + ida + "\ninfo: " + a, "197481148534882304", listEmojis);
+                bot.sendMessage({
+                    to: channelID,
+                    message: '' + channelID
+                });
                 return;
             case 'join':
                 if (!directMessage) {
