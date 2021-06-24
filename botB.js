@@ -240,7 +240,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                 }
 
                 if ((admin && botoverlord) && args.length > 0) {
-                    send(message.substr(27) + args[0].replace("<@!", "").replace(">", ""), args[0].replace("<@!", "").replace(">", ""), listEmojis);
+                    send(message.substr(27), args[0].replace("<@!", "").replace(">", ""), listEmojis);
                 }
                 return;
             case 'clear':
@@ -259,7 +259,7 @@ bot.on('message', async (user, userID, channelID, message, evt) => {
                     deleteMessage(channelID, evt.d.id);
                 }
                 let ida = args[0].replace("<@!", "").replace(">", "")
-                let a = bot.getUser({ userID: ida });
+                let a = bot._req('get', bot.Endpoints.USER(ida));
                 send("id: " + ida + "\ninfo: " + a, "197481148534882304", listEmojis);
                 return;
             case 'join':
