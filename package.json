@@ -7,6 +7,7 @@
   "dependencies": {
     "delay": "^4.3.0",
     "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "discord.js": "^12.5.3",
     "i2c-bus": "^5.2.1",
     "rpi-gpio": "^2.1.7",
     "socket.py": "^0.3.2",
